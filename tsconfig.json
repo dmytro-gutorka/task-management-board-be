@@ -1,0 +1,60 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "outDir": "./dist",
+
+    // Environment Settings
+    "module": "NodeNext",
+    "target": "ES2022",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "esModuleInterop": true,
+
+    // Other Outputs
+    "sourceMap": true,
+
+    // Stricter Typechecking Options
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "resolveJsonModule": true,
+    "noImplicitReturns": true,
+    "useUnknownInCatchVariables": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": false,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "strictPropertyInitialization": false,
+    "moduleDetection": "force",
+    "noEmitOnError": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@types": ["shared/types/index.ts"],
+      "@schemas/*": ["shared/schemas/*"],
+      "@utils/*": ["shared/utils/*", "shared/utils/*/index.ts"],
+      "@exceptions": ["shared/exceptions.ts"],
+      "@validation-middlewares/*": [
+        "shared/middlewares/validation-middlewares/*"
+      ],
+      "@modules/*": ["modules/*", "modules/*/index.ts"],
+      "@infrastructure/*": ["infrastructure/*", "infrastructure/*/index.ts"],
+      "@app/*": ["app/*", "app/*/index.ts"],
+      "@ambient/*": ["ambient/*", "ambient/*/index.ts"]
+    }
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
+}

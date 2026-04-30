@@ -1,0 +1,57 @@
+{
+  "name": "express-server-app",
+  "version": "1.0.0",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": "22.19.0"
+  },
+  "main": "app/main.js",
+  "scripts": {
+    "start:dev": "nodemon",
+    "build": "run-s rm:dist tsc:compile ts-paths:resolve",
+    "start:prod": "run-s build run:prod",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "rm:dist": "rm -rf dist",
+    "tsc:compile": "tsc -p tsconfig.json",
+    "ts-paths:resolve": "tsc-alias -p tsconfig.json",
+    "run:dev": "node --enable-source-maps --env-file=.env dist/app/main.js",
+    "dev:cycle": "run-s tsc:compile ts-paths:resolve run:dev",
+    "run:prod": "node --env-file=.env --env-file=.env.prod dist/app/main.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "chalk": "^5.6.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "npm-run-all": "^4.1.5",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.27",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@eslint/json": "^0.13.2",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.5.2",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^16.4.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0"
+  }
+}
