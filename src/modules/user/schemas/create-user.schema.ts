@@ -4,5 +4,5 @@ export const CreateUserSchema = z.strictObject({
   email: z.email('Email is not valid'),
   name: z.string().min(2, 'Min name length is 2').optional(),
   surname: z.string().min(2, 'Min surname length is 2').optional(),
-  birthday: z.date().optional(),
+  birthday: z.coerce.date().optional(),
 });
