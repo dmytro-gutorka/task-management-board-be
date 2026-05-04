@@ -16,6 +16,9 @@ export const CreateTaskSchema = z.strictObject({
     .enum(TaskPriority, `Task status must be one of: ${PriorityStatusValues.join(', ')}`)
     .optional()
     .default(TaskPriority.MEDIUM),
-  deadline: z.coerce.date().optional(),
+  deadline: z.preprocess(
+    (date) => (date === '' || date === null ? undefined : date),
+    z.coerce.date().optional(),
+  ),
   isPrivate: z.boolean().optional().default(false),
 });

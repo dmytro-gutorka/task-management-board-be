@@ -1,7 +1,7 @@
 import type { DataSource, DeleteResult, Repository } from 'typeorm';
 import type { Nullable } from '@types';
 import type { CreateTaskDto, TaskFindAllQuery, UpdateTaskDto } from '../task.types.js';
-import { applyPagination, applySearch, applySorting } from '@utils/typeorm-query';
+import { applyFilters, applyPagination, applySearch, applySorting } from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
 export class TaskRepository {
@@ -13,8 +13,10 @@ export class TaskRepository {
 
   async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskEntity[]> {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
-    const { q, searchBy, order, sortBy, page, perPage } = query;
+    const { q, searchBy, order, sortBy, page, perPage, priority, status } = query;
 
+
+    applyFilters({ queryBuilder, priority, status });
     applySearch({ q, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
     applyPagination({ page, perPage, queryBuilder });

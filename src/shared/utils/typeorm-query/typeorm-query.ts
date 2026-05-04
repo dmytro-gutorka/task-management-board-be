@@ -1,5 +1,8 @@
 import { Brackets, type ObjectLiteral, SelectQueryBuilder } from 'typeorm';
-import type { PaginationArgs, SearchArgs, SortingArgs } from './types.js';
+import type { FilterArgs, PaginationArgs, SearchArgs, SortingArgs } from './types.js';
+import { TaskFilterFieldsEnum } from '../../../modules/task/enums/task-filter-fields.enum.js';
+import { TaskPriorityFilter } from '../../../modules/task/enums/task-priority.enum.js';
+import { TaskFilterStatus } from '../../../modules/task/enums/task-status.enum.js';
 
 /**
  * Applies pagination (skip/take) to a QueryBuilder.
@@ -57,4 +60,29 @@ export function applySearch<EntityLike extends ObjectLiteral>({
       });
     }),
   );
+}
+
+// TODO: can be build a more universal/generic solution for better scalability
+export function applyFilters<EntryLike extends ObjectLiteral>({
+  queryBuilder,
+  priority,
+  status,
+}: FilterArgs<EntryLike>): SelectQueryBuilder<EntryLike> {
+  const alias = queryBuilder.alias;
+
+  if (priority && priority !== TaskPriorityFilter.ALL) {
+    queryBuilder.andWhere(
+      `${alias}.${TaskFilterFieldsEnum.PRIORITY} = :${TaskFilterFieldsEnum.PRIORITY}`,
+      { priority },
+    );
+  }
+
+  if (status && status !== TaskFilterStatus.ALL) {
+    queryBuilder.andWhere(
+      `${alias}.${TaskFilterFieldsEnum.STATUS} = :${TaskFilterFieldsEnum.STATUS}`,
+      { status },
+    );
+  }
+
+  return queryBuilder;
 }
