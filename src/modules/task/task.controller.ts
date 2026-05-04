@@ -10,8 +10,13 @@ export class TaskController {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // emulate slow response
 
+    console.log(req.query);
+
     const user = req.user!;
     const query = req.validated.query;
+
+    console.log(query);
+
     const tasks = await this.taskService.findAll(user, query);
 
     res.status(200).json(tasks);
