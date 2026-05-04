@@ -7,6 +7,9 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   findAll = async (req: TypedRequest<{ query: TaskFindAllQuery }>, res: Response) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // emulate slow response
+
     const user = req.user!;
     const query = req.validated.query;
     const tasks = await this.taskService.findAll(user, query);
@@ -23,6 +26,9 @@ export class TaskController {
   };
 
   create = async (req: TypedRequest<{ body: CreateTaskDto }>, res: Response) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // emulate slow response
+
     const user = req.user!;
     const task = await this.taskService.create(req.validated.body, user);
     res.status(201).json(task);
@@ -32,6 +38,9 @@ export class TaskController {
     req: TypedRequest<{ body: UpdateTaskDto; params: { id: number } }>,
     res: Response,
   ) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // emulate slow response
+
     const user = req.user!;
     const taskId = req.validated.params.id;
     const updateTaskDto = req.validated.body;
@@ -42,6 +51,9 @@ export class TaskController {
   };
 
   delete = async (req: TypedRequest<{ params: { id: number } }>, res: Response) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // emulate slow response
+
     const user = req.user!;
     const taskId = req.validated.params.id;
 

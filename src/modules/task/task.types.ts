@@ -1,5 +1,6 @@
 import type { DataSource } from 'typeorm';
 import type { infer as ZodInfer } from 'zod';
+import { TaskPriority } from './enums/task-priority.enum.js';
 import type { TaskStatus } from './enums/task-status.enum.js';
 import type { CreateTaskSchema } from './schemas/create-task.schema.js';
 import type { TaskQuerySchema } from './schemas/task-query.schema.js';
@@ -14,11 +15,16 @@ export type TaskFindAllQuery = ZodInfer<typeof TaskQuerySchema>;
 
 // ! Responses
 export interface TaskResponse {
+  authorId: number;
+
   id: number;
   title: string;
   description: string;
   status: TaskStatus;
-  authorId: number;
+  priority: TaskPriority;
+  deadline?: Date | undefined;
+  isPrivate?: boolean;
+
   createdAt: Date;
   updatedAt: Date;
 }
