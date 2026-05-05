@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
-export const PaginationSchema = z.strictObject({
+export const CursorPaginationSchema = z.strictObject({
   cursor: z.string().optional(),
-
   limit: z.coerce
     .number(`'limit' should be a number`)
     .min(1, `Min 'limit' value is 1`)

@@ -9,10 +9,18 @@ import { validateParamsMiddleware } from '@validation-middlewares/validate-param
 import { validateQueryMiddleware } from '@validation-middlewares/validate-query.middleware.js';
 import { validateRequestMiddleware } from '@validation-middlewares/validate-request.middleware.js';
 
+import { CursorPaginationSchema } from '../../shared/schemas/cursor-pagination-schema.js';
+
 export const createTaskRouter = (taskController: TaskController) => {
   const taskRouter = Router();
 
   taskRouter.get('/', [validateQueryMiddleware(TaskQuerySchema)], taskController.findAll);
+
+  taskRouter.get(
+    '/feed',
+    [validateQueryMiddleware(CursorPaginationSchema)],
+    taskController.findFeed,
+  );
 
   taskRouter.get('/:id', [validateParamsMiddleware(ParamsIdSchema)], taskController.findOne);
 

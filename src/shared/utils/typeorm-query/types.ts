@@ -11,7 +11,12 @@ export type EntityWithId = ObjectLiteral & {
   id: number;
 };
 
-export interface PaginationArgs<EntityLike extends EntityWithId> {
+export interface PagePaginationArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {
+  page: number;
+  limit: number;
+}
+
+export interface CursorPaginationArgs<EntityLike extends EntityWithId> {
   authorId: number;
   cursor?: string;
   limit: number;
@@ -21,6 +26,11 @@ export interface PaginationArgs<EntityLike extends EntityWithId> {
 export interface CursorPaginatedResponse<EntityLike> {
   items: EntityLike[];
   nextCursor: string | null;
+}
+
+export interface PagePaginatedResponse<EntityLike> {
+  items: EntityLike[];
+  total: number;
 }
 
 export interface SortingArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {

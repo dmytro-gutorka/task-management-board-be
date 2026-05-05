@@ -1,9 +1,11 @@
 import { Brackets, type ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import type {
   CursorPaginatedResponse,
+  CursorPaginationArgs,
   EntityWithId,
   FilterArgs,
-  PaginationArgs,
+  PagePaginatedResponse,
+  PagePaginationArgs,
   SearchArgs,
   SortingArgs,
 } from './types.js';
@@ -13,12 +15,25 @@ import { TaskFilterStatus } from '../../../modules/task/enums/task-status.enum.j
 
 import { SortOrder } from '../../types/index.js';
 
+export async function applyPagePagination<EntityLike extends ObjectLiteral>({
+  page,
+  limit,
+  queryBuilder,
+}: PagePaginationArgs<EntityLike>): Promise<PagePaginatedResponse<EntityLike>> {
+  const [items, total] = await queryBuilder
+    .skip((page - 1) * limit)
+    .take(limit)
+    .getManyAndCount();
+
+  return { items, total };
+}
+
 export async function applyCursorPagination<EntityLike extends EntityWithId>({
   authorId,
   cursor,
   limit,
   queryBuilder,
-}: PaginationArgs<EntityLike>): Promise<CursorPaginatedResponse<EntityLike>> {
+}: CursorPaginationArgs<EntityLike>): Promise<CursorPaginatedResponse<EntityLike>> {
   const alias = queryBuilder.alias;
 
   queryBuilder.andWhere(`${alias}.authorId = :authorId`, { authorId });

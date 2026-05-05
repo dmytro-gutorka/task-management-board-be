@@ -3,12 +3,15 @@ import type { Nullable } from '@types';
 import type {
   CreateTaskDto,
   TaskCursorPaginatedResponse,
+  TaskCursorQuery,
   TaskFindAllQuery,
+  TaskPagePaginatedResponse,
   UpdateTaskDto,
 } from '../task.types.js';
 import {
   applyCursorPagination,
   applyFilters,
+  applyPagePagination,
   applySearch,
   applySorting,
 } from '@utils/typeorm-query';
@@ -21,13 +24,31 @@ export class TaskRepository {
     this.taskRepository = this.dataSource.getRepository(TaskEntity);
   }
 
-  async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskCursorPaginatedResponse> {
+  async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskPagePaginatedResponse> {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
-    const { q, searchBy, order, sortBy, priority, status, cursor, limit = 10 } = query;
+
+    const { q, searchBy, order, sortBy, priority, status, page = 1, limit = 20 } = query;
 
     applyFilters({ queryBuilder, priority, status });
     applySearch({ q, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
+
+    const { items, total } = await applyPagePagination({ page, limit, queryBuilder });
+
+    queryBuilder.andWhere('tasks.authorId = :authorId', { authorId });
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findFeed(authorId: number, query: TaskCursorQuery): Promise<TaskCursorPaginatedResponse> {
+    const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
+    const { cursor, limit = 10 } = query;
 
     const { items, nextCursor } = await applyCursorPagination({
       authorId,
