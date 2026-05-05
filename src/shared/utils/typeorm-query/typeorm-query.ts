@@ -68,13 +68,17 @@ export function applyFilters<EntryLike extends ObjectLiteral, TQuery>({
 
   filters.forEach(({ queryKey, field, ignoreValue }) => {
     const value = query[queryKey];
+    const paramKey = String(queryKey);
 
-    if (value === undefined || value === null || value === ignoreValue) {
+    if (value === undefined || value === ignoreValue) return;
+
+    if (value === null) {
+      queryBuilder.andWhere(`${alias}.${field} IS NULL`);
       return;
     }
 
     queryBuilder.andWhere(`${alias}.${field} = :${String(queryKey)}`, {
-      [queryKey]: value,
+      [paramKey]: value,
     });
   });
 
