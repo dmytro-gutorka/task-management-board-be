@@ -6,7 +6,12 @@ import type {
   TaskFindAllQuery,
   UpdateTaskDto,
 } from '../task.types.js';
-import { applyFilters, applyPagination, applySearch, applySorting } from '@utils/typeorm-query';
+import {
+  applyCursorPagination,
+  applyFilters,
+  applySearch,
+  applySorting,
+} from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
 export class TaskRepository {
@@ -24,7 +29,12 @@ export class TaskRepository {
     applySearch({ q, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
 
-    const { items, nextCursor } = await applyPagination({ authorId, cursor, limit, queryBuilder });
+    const { items, nextCursor } = await applyCursorPagination({
+      authorId,
+      cursor,
+      limit,
+      queryBuilder,
+    });
 
     return { items, nextCursor };
   }

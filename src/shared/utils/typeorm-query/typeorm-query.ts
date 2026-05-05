@@ -13,7 +13,7 @@ import { TaskFilterStatus } from '../../../modules/task/enums/task-status.enum.j
 
 import { SortOrder } from '../../types/index.js';
 
-export async function applyPagination<EntityLike extends EntityWithId>({
+export async function applyCursorPagination<EntityLike extends EntityWithId>({
   authorId,
   cursor,
   limit,
