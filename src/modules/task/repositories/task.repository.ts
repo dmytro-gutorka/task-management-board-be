@@ -4,6 +4,8 @@ import type { CreateTaskDto, TaskFindAllQuery, UpdateTaskDto } from '../task.typ
 import { applyFilters, applyPagination, applySearch, applySorting } from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
+import { taskFilters } from '../configs/task-filters.config.js';
+
 export class TaskRepository {
   private readonly taskRepository: Repository<TaskEntity>;
 
@@ -13,10 +15,9 @@ export class TaskRepository {
 
   async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskEntity[]> {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
-    const { q, searchBy, order, sortBy, page, perPage, priority, status } = query;
+    const { q, searchBy, order, sortBy, page, perPage } = query;
 
-
-    applyFilters({ queryBuilder, priority, status });
+    applyFilters({ queryBuilder, query, filters: taskFilters });
     applySearch({ q, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
     applyPagination({ page, perPage, queryBuilder });
