@@ -10,9 +10,9 @@ export class TaskController {
     const user = req.user!;
     const query = req.validated.query;
 
-    const tasks = await this.taskService.findAll(user, query);
+    const page = await this.taskService.findAll(user, query);
 
-    res.status(200).json(tasks);
+    res.status(200).json(page);
   };
 
   findOne = async (req: TypedRequest<{ params: { id: number } }>, res: Response) => {

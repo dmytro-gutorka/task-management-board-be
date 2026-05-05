@@ -29,6 +29,11 @@ export interface TaskResponse {
   updatedAt: Date;
 }
 
+export interface TaskCursorPaginatedResponse {
+  items: TaskResponse[];
+  nextCursor: string | null;
+}
+
 // ! Composer
 export interface TaskModuleComposerArgs {
   dataSource: DataSource;

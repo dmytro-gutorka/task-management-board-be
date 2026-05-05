@@ -7,9 +7,20 @@ export interface BaseArgs<EntityLike extends ObjectLiteral> {
   queryBuilder: SelectQueryBuilder<EntityLike>;
 }
 
-export interface PaginationArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {
-  page?: number;
-  perPage?: number;
+export type EntityWithId = ObjectLiteral & {
+  id: number;
+};
+
+export interface PaginationArgs<EntityLike extends EntityWithId> {
+  authorId: number;
+  cursor?: string;
+  limit: number;
+  queryBuilder: SelectQueryBuilder<EntityLike>;
+}
+
+export interface CursorPaginatedResponse<EntityLike> {
+  items: EntityLike[];
+  nextCursor: string | null;
 }
 
 export interface SortingArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {
