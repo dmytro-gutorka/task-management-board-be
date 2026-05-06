@@ -17,6 +17,8 @@ import {
 } from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
+import { taskFilters } from '../configs/task-filters.config.js';
+
 export class TaskRepository {
   private readonly taskRepository: Repository<TaskEntity>;
 
