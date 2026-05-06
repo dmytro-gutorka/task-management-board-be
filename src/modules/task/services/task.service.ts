@@ -2,6 +2,7 @@ import type { ActiveUser } from '@modules/auth';
 import type { MessageResponse } from '@types';
 import type {
   CreateTaskDto,
+  TaskCursorPaginatedResponse,
   TaskFindAllQuery,
   TaskResponse,
   UpdateTaskDto,
@@ -12,7 +13,7 @@ import { TaskNotFoundException } from '../exceptions/task-not-found.exception.js
 export class TaskService {
   constructor(private readonly taskRepository: TaskRepository) {}
 
-  async findAll(user: ActiveUser, query: TaskFindAllQuery): Promise<TaskResponse[]> {
+  async findAll(user: ActiveUser, query: TaskFindAllQuery): Promise<TaskCursorPaginatedResponse> {
     return this.taskRepository.findAll(user.id, query);
   }
 

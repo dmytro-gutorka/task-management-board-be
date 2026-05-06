@@ -1,19 +1,36 @@
 import { Brackets, type ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import type { FilterArgs, PaginationArgs, SearchArgs, SortingArgs } from './types.js';
 
-/**
- * Applies pagination (skip/take) to a QueryBuilder.
- *
- * - If either `page` or `perPage` is missing, no pagination will be applied.
- */
-export function applyPagination<EntityLike extends ObjectLiteral>({
-  page,
-  perPage,
-  queryBuilder,
-}: PaginationArgs<EntityLike>): SelectQueryBuilder<EntityLike> {
-  if (!page || !perPage || page < 1 || perPage < 1) return queryBuilder;
+import { SortOrder } from '../../types/index.js';
 
-  return queryBuilder.skip((page - 1) * perPage).take(perPage);
+export async function applyCursorPagination<EntityLike extends EntityWithId>({
+  authorId,
+  cursor,
+  limit,
+  queryBuilder,
+}: PaginationArgs<EntityLike>): Promise<CursorPaginatedResponse<EntityLike>> {
+  const alias = queryBuilder.alias;
+
+  queryBuilder.andWhere(`${alias}.authorId = :authorId`, { authorId });
+
+  if (cursor) {
+    queryBuilder.andWhere(`${alias}.id < :cursor`, {
+      cursor: Number(cursor),
+    });
+  }
+
+  queryBuilder.addOrderBy(`${alias}.id`, SortOrder.DESC);
+
+  const itemsWithExtra = await queryBuilder.take(limit + 1).getMany();
+
+  const hasNextPage = itemsWithExtra.length > limit;
+  const items = hasNextPage ? itemsWithExtra.slice(0, limit) : itemsWithExtra;
+  const lastItem = items.at(-1);
+
+  return {
+    items,
+    nextCursor: hasNextPage && lastItem ? String(lastItem.id) : null,
+  };
 }
 
 /**
