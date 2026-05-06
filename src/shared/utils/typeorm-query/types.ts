@@ -39,7 +39,7 @@ export interface SortingArgs<EntityLike extends ObjectLiteral> extends BaseArgs<
 }
 
 export interface SearchArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {
-  q?: string;
+  search?: string;
   searchBy?: (keyof EntityLike)[];
 }
 

@@ -26,14 +26,15 @@ export class TaskRepository {
 
   async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskPagePaginatedResponse> {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
+    const { search, searchBy, order, sortBy, priority, status, page = 1, limit = 20 } = query;
+
     queryBuilder.andWhere('tasks.authorId = :authorId', { authorId });
 
-    const { q, searchBy, order, sortBy, priority, status, page = 1, limit = 20 } = query;
-    const { items, total } = await applyPagePagination({ page, limit, queryBuilder });
-
     applyFilters({ queryBuilder, priority, status });
-    applySearch({ q, searchBy, queryBuilder });
+    applySearch({ search, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
+
+    const { items, total } = await applyPagePagination({ page, limit, queryBuilder });
 
     return {
       items,

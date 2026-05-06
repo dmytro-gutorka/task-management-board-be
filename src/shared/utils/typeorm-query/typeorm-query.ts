@@ -82,11 +82,11 @@ export function applySorting<EntityLike extends ObjectLiteral>({
  * - Multiple fields are combined with OR inside a single bracket group.
  */
 export function applySearch<EntityLike extends ObjectLiteral>({
-  q,
+  search,
   searchBy,
   queryBuilder,
 }: SearchArgs<EntityLike>): SelectQueryBuilder<EntityLike> {
-  const trimmedQ = q?.trim();
+  const trimmedQ = search?.trim();
 
   if (!trimmedQ || !searchBy?.length) return queryBuilder;
 
@@ -95,7 +95,7 @@ export function applySearch<EntityLike extends ObjectLiteral>({
   return queryBuilder.andWhere(
     new Brackets((qb1) => {
       searchBy.forEach((field) => {
-        qb1.orWhere(`${alias}.${field.toString()} ILIKE :q`, { q: `%${trimmedQ}%` });
+        qb1.orWhere(`${alias}.${field.toString()} ILIKE :search`, { search: `%${trimmedQ}%` });
       });
     }),
   );
