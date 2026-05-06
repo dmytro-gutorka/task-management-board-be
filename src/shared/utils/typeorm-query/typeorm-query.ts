@@ -1,15 +1,5 @@
 import { Brackets, type ObjectLiteral, SelectQueryBuilder } from 'typeorm';
-import type {
-  CursorPaginatedResponse,
-  EntityWithId,
-  FilterArgs,
-  PaginationArgs,
-  SearchArgs,
-  SortingArgs,
-} from './types.js';
-import { TaskFilterFieldsEnum } from '../../../modules/task/enums/task-filter-fields.enum.js';
-import { TaskPriorityFilter } from '../../../modules/task/enums/task-priority.enum.js';
-import { TaskFilterStatus } from '../../../modules/task/enums/task-status.enum.js';
+import type { FilterArgs, PaginationArgs, SearchArgs, SortingArgs } from './types.js';
 
 import { SortOrder } from '../../types/index.js';
 
@@ -86,27 +76,28 @@ export function applySearch<EntityLike extends ObjectLiteral>({
   );
 }
 
-// TODO: can be build a more universal/generic solution for better scalability
-export function applyFilters<EntryLike extends ObjectLiteral>({
+export function applyFilters<EntryLike extends ObjectLiteral, TQuery>({
   queryBuilder,
-  priority,
-  status,
-}: FilterArgs<EntryLike>): SelectQueryBuilder<EntryLike> {
+  query,
+  filters,
+}: FilterArgs<EntryLike, TQuery>): SelectQueryBuilder<EntryLike> {
   const alias = queryBuilder.alias;
 
-  if (priority && priority !== TaskPriorityFilter.ALL) {
-    queryBuilder.andWhere(
-      `${alias}.${TaskFilterFieldsEnum.PRIORITY} = :${TaskFilterFieldsEnum.PRIORITY}`,
-      { priority },
-    );
-  }
+  filters.forEach(({ queryKey, field, ignoreValue }) => {
+    const value = query[queryKey];
+    const paramKey = String(queryKey);
 
-  if (status && status !== TaskFilterStatus.ALL) {
-    queryBuilder.andWhere(
-      `${alias}.${TaskFilterFieldsEnum.STATUS} = :${TaskFilterFieldsEnum.STATUS}`,
-      { status },
-    );
-  }
+    if (value === undefined || value === ignoreValue) return;
+
+    if (value === null) {
+      queryBuilder.andWhere(`${alias}.${field} IS NULL`);
+      return;
+    }
+
+    queryBuilder.andWhere(`${alias}.${field} = :${String(queryKey)}`, {
+      [paramKey]: value,
+    });
+  });
 
   return queryBuilder;
 }

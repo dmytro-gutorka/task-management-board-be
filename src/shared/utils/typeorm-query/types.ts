@@ -1,7 +1,5 @@
 import type { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import type { SortOrder } from '@types';
-import type { TaskPriorityFilter } from '../../../modules/task/enums/task-priority.enum.js';
-import type { TaskFilterStatus } from '../../../modules/task/enums/task-status.enum.js';
 
 export interface BaseArgs<EntityLike extends ObjectLiteral> {
   queryBuilder: SelectQueryBuilder<EntityLike>;
@@ -33,7 +31,14 @@ export interface SearchArgs<EntityLike extends ObjectLiteral> extends BaseArgs<E
   searchBy?: (keyof EntityLike)[];
 }
 
-export interface FilterArgs<EntityLike extends ObjectLiteral> extends BaseArgs<EntityLike> {
-  priority: TaskPriorityFilter;
-  status: TaskFilterStatus;
+export interface FilterConfig<TQuery> {
+  queryKey: keyof TQuery;
+  field: string;
+  ignoreValue?: unknown;
+}
+
+export interface FilterArgs<EntryLike extends ObjectLiteral, TQuery> {
+  queryBuilder: SelectQueryBuilder<EntryLike>;
+  query: TQuery;
+  filters: FilterConfig<TQuery>[];
 }

@@ -14,6 +14,8 @@ import {
 } from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
+import { taskFilters } from '../configs/task-filters.config.js';
+
 export class TaskRepository {
   private readonly taskRepository: Repository<TaskEntity>;
 
@@ -25,7 +27,7 @@ export class TaskRepository {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
     const { q, searchBy, order, sortBy, priority, status, cursor, limit = 10 } = query;
 
-    applyFilters({ queryBuilder, priority, status });
+    applyFilters({ queryBuilder, query, filters: taskFilters });
     applySearch({ q, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
 
