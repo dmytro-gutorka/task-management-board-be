@@ -61,7 +61,7 @@ export async function applyCursorPagination<EntityLike extends EntityWithId>({
  * - If `sortBy` or `order` is missing, no sorting will be applied.
  */
 export function applySorting<EntityLike extends ObjectLiteral>({
-  order = SortOrder.ASC,
+  order = SortOrder.DESC,
   sortBy,
   queryBuilder,
 }: SortingArgs<EntityLike>): SelectQueryBuilder<EntityLike> {

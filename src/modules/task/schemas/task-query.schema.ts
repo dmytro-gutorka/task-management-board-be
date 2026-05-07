@@ -5,7 +5,12 @@ import { createSearchQuerySchema } from '@schemas/search-query.schema.js';
 import { createSortingQuerySchema } from '@schemas/sorting-query.schema.js';
 
 const SearchQuerySchema = createSearchQuerySchema(['title', 'description']);
-const SortingQuerySchema = createSortingQuerySchema(['createdAt', 'title', 'deadline']);
+const SortingQuerySchema = createSortingQuerySchema([
+  'createdAt',
+  'updatedAt',
+  'title',
+  'deadline',
+]);
 
 export const TaskQuerySchema = SearchQuerySchema.extend(SortingQuerySchema.shape)
   .extend(PagePaginationSchema.shape)
