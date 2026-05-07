@@ -17,6 +17,8 @@ import {
 } from '@utils/typeorm-query';
 import { TaskEntity } from '../entities/task.entity.js';
 
+import { taskFilters } from '../configs/task-filters.config.js';
+
 export class TaskRepository {
   private readonly taskRepository: Repository<TaskEntity>;
 
@@ -26,11 +28,11 @@ export class TaskRepository {
 
   async findAll(authorId: number, query: TaskFindAllQuery): Promise<TaskPagePaginatedResponse> {
     const queryBuilder = this.taskRepository.createQueryBuilder('tasks');
-    const { search, searchBy, order, sortBy, priority, status, page = 1, limit = 20 } = query;
+    const { search, searchBy, order, sortBy, page = 1, limit = 20 } = query;
 
     queryBuilder.andWhere('tasks.authorId = :authorId', { authorId });
 
-    applyFilters({ queryBuilder, priority, status });
+    applyFilters({ queryBuilder, query, filters: taskFilters });
     applySearch({ search, searchBy, queryBuilder });
     applySorting({ order, sortBy, queryBuilder });
 
