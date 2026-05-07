@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
-export const PaginationSchema = z.strictObject({
+export const PagePaginationSchema = z.strictObject({
   page: z.coerce
     .number(`'page' should be a number`)
     .min(1, `Min 'page' value is 1`)
     .default(1)
     .optional(),
-  perPage: z.coerce
-    .number(`'perPage' should be a number`)
-    .min(1, `Min 'perPage' value is 1`)
+  limit: z.coerce
+    .number(`'limit' should be a number`)
+    .min(1, `Min 'limit' value is 1`)
     .default(20)
     .optional(),
 });

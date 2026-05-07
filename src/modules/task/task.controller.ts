@@ -1,6 +1,11 @@
 import type { Response } from 'express';
 import type { TypedRequest } from '@types';
-import type { CreateTaskDto, TaskFindAllQuery, UpdateTaskDto } from './task.types.js';
+import type {
+  CreateTaskDto,
+  TaskCursorQuery,
+  TaskFindAllQuery,
+  UpdateTaskDto,
+} from './task.types.js';
 import type { TaskService } from './services/task.service.js';
 
 export class TaskController {
@@ -9,9 +14,19 @@ export class TaskController {
   findAll = async (req: TypedRequest<{ query: TaskFindAllQuery }>, res: Response) => {
     const user = req.user!;
     const query = req.validated.query;
-    const tasks = await this.taskService.findAll(user, query);
 
-    res.status(200).json(tasks);
+    const result = await this.taskService.findAll(user, query);
+
+    res.status(200).json(result);
+  };
+
+  findFeed = async (req: TypedRequest<{ query: TaskCursorQuery }>, res: Response) => {
+    const user = req.user!;
+    const query = req.validated.query;
+
+    const page = await this.taskService.findFeed(user, query);
+
+    res.status(200).json(page);
   };
 
   findOne = async (req: TypedRequest<{ params: { id: number } }>, res: Response) => {

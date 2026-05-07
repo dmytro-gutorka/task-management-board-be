@@ -8,7 +8,10 @@ export function createSearchQuerySchema<const K extends string>(fields: readonly
   const FieldEnum = z.enum(fields);
 
   return z.strictObject({
-    q: z.string().trim().min(1).optional(),
+    search: z.preprocess(
+      (searchValue) => (searchValue === '' ? undefined : searchValue),
+      z.string().trim().min(1).optional(),
+    ),
     searchBy: z
       .union(
         [FieldEnum, z.array(FieldEnum).nonempty()],

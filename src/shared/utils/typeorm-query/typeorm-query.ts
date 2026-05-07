@@ -1,19 +1,58 @@
 import { Brackets, type ObjectLiteral, SelectQueryBuilder } from 'typeorm';
-import type { PaginationArgs, SearchArgs, SortingArgs } from './types.js';
+import type {
+  CursorPaginatedResponse,
+  CursorPaginationArgs,
+  EntityWithId,
+  FilterArgs,
+  PagePaginatedResponse,
+  PagePaginationArgs,
+  SearchArgs,
+  SortingArgs,
+} from './types.js';
 
-/**
- * Applies pagination (skip/take) to a QueryBuilder.
- *
- * - If either `page` or `perPage` is missing, no pagination will be applied.
- */
-export function applyPagination<EntityLike extends ObjectLiteral>({
+import { SortOrder } from '../../types/index.js';
+
+export async function applyPagePagination<EntityLike extends ObjectLiteral>({
   page,
-  perPage,
+  limit,
   queryBuilder,
-}: PaginationArgs<EntityLike>): SelectQueryBuilder<EntityLike> {
-  if (!page || !perPage || page < 1 || perPage < 1) return queryBuilder;
+}: PagePaginationArgs<EntityLike>): Promise<PagePaginatedResponse<EntityLike>> {
+  const [items, total] = await queryBuilder
+    .skip((page - 1) * limit)
+    .take(limit)
+    .getManyAndCount();
 
-  return queryBuilder.skip((page - 1) * perPage).take(perPage);
+  return { items, total };
+}
+
+export async function applyCursorPagination<EntityLike extends EntityWithId>({
+  authorId,
+  cursor,
+  limit,
+  queryBuilder,
+}: CursorPaginationArgs<EntityLike>): Promise<CursorPaginatedResponse<EntityLike>> {
+  const alias = queryBuilder.alias;
+
+  queryBuilder.andWhere(`${alias}.authorId = :authorId`, { authorId });
+
+  if (cursor) {
+    queryBuilder.andWhere(`${alias}.id < :cursor`, {
+      cursor: Number(cursor),
+    });
+  }
+
+  queryBuilder.addOrderBy(`${alias}.id`, SortOrder.DESC);
+
+  const itemsWithExtra = await queryBuilder.take(limit + 1).getMany();
+
+  const hasNextPage = itemsWithExtra.length > limit;
+  const items = hasNextPage ? itemsWithExtra.slice(0, limit) : itemsWithExtra;
+  const lastItem = items.at(-1);
+
+  return {
+    items,
+    nextCursor: hasNextPage && lastItem ? String(lastItem.id) : null,
+  };
 }
 
 /**
@@ -22,7 +61,7 @@ export function applyPagination<EntityLike extends ObjectLiteral>({
  * - If `sortBy` or `order` is missing, no sorting will be applied.
  */
 export function applySorting<EntityLike extends ObjectLiteral>({
-  order,
+  order = SortOrder.DESC,
   sortBy,
   queryBuilder,
 }: SortingArgs<EntityLike>): SelectQueryBuilder<EntityLike> {
@@ -40,11 +79,11 @@ export function applySorting<EntityLike extends ObjectLiteral>({
  * - Multiple fields are combined with OR inside a single bracket group.
  */
 export function applySearch<EntityLike extends ObjectLiteral>({
-  q,
+  search,
   searchBy,
   queryBuilder,
 }: SearchArgs<EntityLike>): SelectQueryBuilder<EntityLike> {
-  const trimmedQ = q?.trim();
+  const trimmedQ = search?.trim();
 
   if (!trimmedQ || !searchBy?.length) return queryBuilder;
 
@@ -53,8 +92,34 @@ export function applySearch<EntityLike extends ObjectLiteral>({
   return queryBuilder.andWhere(
     new Brackets((qb1) => {
       searchBy.forEach((field) => {
-        qb1.orWhere(`${alias}.${field.toString()} ILIKE :q`, { q: `%${trimmedQ}%` });
+        qb1.orWhere(`${alias}.${field.toString()} ILIKE :search`, { search: `%${trimmedQ}%` });
       });
     }),
   );
+}
+
+export function applyFilters<EntryLike extends ObjectLiteral, TQuery>({
+  queryBuilder,
+  query,
+  filters,
+}: FilterArgs<EntryLike, TQuery>): SelectQueryBuilder<EntryLike> {
+  const alias = queryBuilder.alias;
+
+  filters.forEach(({ queryKey, field, ignoreValue }) => {
+    const value = query[queryKey];
+    const paramKey = String(queryKey);
+
+    if (value === undefined || value === ignoreValue) return;
+
+    if (value === null) {
+      queryBuilder.andWhere(`${alias}.${field} IS NULL`);
+      return;
+    }
+
+    queryBuilder.andWhere(`${alias}.${field} = :${String(queryKey)}`, {
+      [paramKey]: value,
+    });
+  });
+
+  return queryBuilder;
 }
