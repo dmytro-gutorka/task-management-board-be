@@ -36,7 +36,7 @@ export class TaskEntity {
   })
   priority: TaskPriority;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'date', nullable: true })
   deadline?: Date;
 
   @Column({ default: false })

@@ -19,6 +19,8 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   loggerService.init(DatabaseService.name);
 
   // Feature modules and services
+  //   const userPreferences =
+
   const user = runUserModuleComposer({ dataSource });
   loggerService.init('UserModule');
 
