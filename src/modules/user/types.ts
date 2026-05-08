@@ -14,6 +14,8 @@ export interface UserResponse {
   name: Nullable<string>;
   surname: Nullable<string>;
   birthday: Nullable<Date>;
+  avatarUrl: Nullable<string>;
+  lastLoginAt: Nullable<Date>;
   createdAt: Date;
   updatedAt: Date;
 }
