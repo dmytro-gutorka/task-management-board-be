@@ -27,9 +27,6 @@ export class UserEntity {
   @Column({ nullable: true, type: 'date' })
   birthday: Nullable<Date>;
 
-  @Column({ name: 'avatar_url', type: 'varchar', length: 255, nullable: true })
-  avatarUrl: Nullable<string>;
-
   @Column({
     name: 'last_login_at',
     type: 'timestamptz',

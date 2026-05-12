@@ -3,8 +3,8 @@ import { BadRequestException } from '@exceptions';
 
 import { MULTER_ERROR_TYPES } from '../../../shared/constants/media.constants.js';
 import { convertBytesToMegaBytes } from '../../../shared/helpers/convertBytesToMegaBytes.js';
-import { getMimeTypesArrayToString } from '../helpers/getMimeTypesFromArray.js';
 import { isAvatarUploadAllowedType } from '../../../shared/helpers/isMimeTypeIsAllowed.js';
+import { getMimeTypesArrayToString } from '../helpers/getMimeTypesFromArray.js';
 import {
   AVATAR_ALLOWED_MIME_TYPES,
   AVATAR_FORM_DATA_FIELD_NAME,
