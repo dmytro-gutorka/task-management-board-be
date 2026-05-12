@@ -1,8 +1,8 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm';
-import { type Nullable, SortOrder } from '@types';
-import { MediaEntity } from '../../media/entities/media.entity.js';
+import { MediaEntity } from '../entities/media.entity.js';
 import { UserAvatarEntity } from '../entities/user-avatar.entity.js';
 
+import { type Nullable, SortOrder } from '../../../shared/types/index.js';
 import { UserEntity } from '../../user/index.js';
 
 export class UserAvatarRepository {

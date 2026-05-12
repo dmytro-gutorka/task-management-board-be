@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   type Relation,
 } from 'typeorm';
-import { MediaEntity } from '../../media/entities/media.entity.js';
+import { MediaEntity } from './media.entity.js';
 
 import { UserEntity } from '../../user/index.js';
 

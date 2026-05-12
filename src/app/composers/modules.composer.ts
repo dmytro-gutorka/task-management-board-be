@@ -6,7 +6,9 @@ import { runTaskModuleComposer } from '@modules/task';
 import { runUserModuleComposer } from '@modules/user';
 import type { AppModuleRouters, ModulesComposerReturn } from './types.js';
 import { MediaRepository } from '../../modules/media/repositories/media.repository.js';
-import { UserAvatarRepository } from '../../modules/user-avatar/repositories/user-avatar.repository.js';
+import { UserAvatarRepository } from '../../modules/media/repositories/user-avatar.repository.js';
+import { MediaService } from '../../modules/media/services/media.service.js';
+import { UserAvatarService } from '../../modules/media/services/user-avatar.service.js';
 
 import { CloudinaryMediaStorageService } from '../../infrastructure/media-storage/index.js';
 
@@ -25,16 +27,14 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const mediaStorageService = new CloudinaryMediaStorageService(configService);
   loggerService.init(CloudinaryMediaStorageService.name);
 
+  // Shared feature services
   const mediaRepository = new MediaRepository(dataSource);
   const userAvatarRepository = new UserAvatarRepository(dataSource);
+  const mediaService = new MediaService(mediaRepository, mediaStorageService);
+  const userAvatarService = new UserAvatarService(dataSource, mediaService, userAvatarRepository);
 
   // Feature modules and services
-  const user = runUserModuleComposer({
-    dataSource,
-    mediaStorageService,
-    mediaRepository,
-    userAvatarRepository,
-  });
+  const user = runUserModuleComposer({ dataSource, userAvatarService });
 
   const auth = runAuthModuleComposer({ dataSource, configService, userService: user.userService });
   loggerService.init('AuthModule');

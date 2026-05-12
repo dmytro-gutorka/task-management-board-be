@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import type { Nullable } from '@types';
-import { UserPreferencesEntity } from '../../user-preferences/entities/user-preferences.entity.js';
+import { UserPreferencesEntity } from './user-preferences.entity.js';
 
 @Entity('users', { orderBy: { id: 'ASC' } })
 export class UserEntity {

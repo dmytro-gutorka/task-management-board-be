@@ -11,6 +11,7 @@ export class UserController {
   me = async (req: TypedRequest<{ params: { id: number } }>, res: Response) => {
     const user = req.user!;
     const currentUser = await this.userService.findOne(user.id);
+
     res.status(200).json(currentUser);
   };
 
@@ -18,6 +19,7 @@ export class UserController {
     const user = req.user!;
     const updateUserDto = req.validated.body;
     const updatedUser = await this.userService.update(user.id, updateUserDto);
+
     res.status(200).json(updatedUser);
   };
 
@@ -35,12 +37,14 @@ export class UserController {
     };
 
     const updatedUser = await this.userService.uploadAvatar(user.id, uploadUserAvatarDto);
+
     res.status(200).json(updatedUser);
   };
 
   deleteMe = async (req: TypedRequest, res: Response) => {
     const user = req.user!;
     const messageResponse = await this.userService.delete(user.id);
+
     res.status(200).json(messageResponse);
   };
 }

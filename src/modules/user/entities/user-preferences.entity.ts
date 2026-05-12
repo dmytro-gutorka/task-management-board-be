@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { AppLanguage, AppTheme } from '../user-preferences.types.js';
 
-import { UserEntity } from '../../user/index.js';
+import { UserEntity } from '../index.js';
 
 @Entity('user_preferences')
 export class UserPreferencesEntity {

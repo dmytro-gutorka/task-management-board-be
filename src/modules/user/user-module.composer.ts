@@ -6,18 +6,10 @@ import { createUserRouter } from './user.router.js';
 
 export const runUserModuleComposer = ({
   dataSource,
-  mediaStorageService,
-  mediaRepository,
-  userAvatarRepository,
+  userAvatarService,
 }: UserModuleComposerArgs) => {
   const userRepository = new UserRepository(dataSource);
-  const userService = new UserService(
-    dataSource,
-    userRepository,
-    mediaRepository,
-    userAvatarRepository,
-    mediaStorageService,
-  );
+  const userService = new UserService(userRepository, userAvatarService);
   const userController = new UserController(userService);
 
   const userRouter = createUserRouter(userController);

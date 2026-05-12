@@ -10,6 +10,7 @@ export class MediaRepository {
 
   async create(media: Omit<MediaEntity, 'id' | 'createdAt'>, manager?: EntityManager) {
     const repository = this.getRepository(manager);
+
     return repository.save(media);
   }
 
@@ -17,6 +18,7 @@ export class MediaRepository {
     if (ids.length === 0) return;
 
     const repository = this.getRepository(manager);
+
     await repository.delete(ids);
   }
 

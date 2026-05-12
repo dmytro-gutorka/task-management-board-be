@@ -1,31 +1,21 @@
-import type { DataSource, EntityManager } from 'typeorm';
+import type { EntityManager } from 'typeorm';
 import type { MessageResponse, Nullable } from '@types';
 import type { CreateUserDto, UpdateUserDto, UploadUserAvatarDto, UserResponse } from '../types.js';
 import type { UserEntity } from '../entities/user.entity.js';
-import type { MediaRepository } from '../../media/repositories/media.repository.js';
-import type { UserAvatarRepository } from '../../user-avatar/repositories/user-avatar.repository.js';
 import type { UserRepository } from '../repositories/user.repository.js';
+import type { UserAvatarService } from '../../media/services/user-avatar.service.js';
 import { ConflictException, NotFoundException } from '@exceptions';
 
-import type { MediaStorageService } from '../../../infrastructure/media-storage/index.js';
-import { MediaStorageProvider, MediaType } from '../../../shared/enums/media.enums.js';
-import { buildAvatarUploadFolderForUser } from '../helpers/buildAvatarUploadFolderForUser.js';
-
 export class UserService {
-  // eslint-disable-next-line max-params
   constructor(
-    private readonly dataSource: DataSource,
     private readonly userRepository: UserRepository,
-    private readonly mediaRepository: MediaRepository,
-    private readonly userAvatarRepository: UserAvatarRepository,
-    private readonly mediaStorageService: MediaStorageService,
+    private readonly userAvatarService: UserAvatarService,
   ) {}
 
   async findOne(id: number): Promise<UserResponse> {
     const user = await this.userRepository.findOne(id);
-    if (!user) {
-      throw new NotFoundException(`User not found`);
-    }
+
+    if (!user) throw new NotFoundException(`User not found`);
 
     return this.toUserResponse(user);
   }
@@ -35,6 +25,7 @@ export class UserService {
     manager?: EntityManager,
   ): Promise<Nullable<UserResponse>> {
     const user = await this.userRepository.findByField('email', email, manager);
+
     if (!user) return null;
 
     return this.toUserResponse(user);
@@ -47,81 +38,47 @@ export class UserService {
       createUserDto.email,
       manager,
     );
-    if (existingUser) {
-      throw new ConflictException(`User already exists`);
-    }
+    if (existingUser) throw new ConflictException(`User already exists`);
 
     const user = await this.userRepository.create(createUserDto, manager);
+
     return this.toUserResponse(user);
   }
 
   async update(userId: number, updateUserDto: UpdateUserDto): Promise<UserResponse> {
     const updatedUser = await this.userRepository.update(userId, updateUserDto);
-    if (!updatedUser) {
-      throw new NotFoundException(`User not found`);
-    }
+
+    if (!updatedUser) throw new NotFoundException(`User not found`);
 
     return this.toUserResponse(updatedUser);
   }
 
   async uploadAvatar(userId: number, avatar: UploadUserAvatarDto): Promise<UserResponse> {
     const user = await this.userRepository.findOne(userId);
-    if (!user) {
-      throw new NotFoundException(`User not found`);
-    }
 
-    const uploadedMedia = await this.mediaStorageService.upload({
-      buffer: avatar.buffer,
-      fileName: avatar.originalName,
-      mimeType: avatar.mimeType,
-      folder: buildAvatarUploadFolderForUser(userId),
-      resourceType: MediaType.IMAGE,
-    });
+    if (!user) throw new NotFoundException(`User not found`);
 
-    await this.dataSource.transaction(async (manager) => {
-      const media = await this.mediaRepository.create(
-        {
-          mediaType: MediaType.IMAGE,
-          publicUrl: uploadedMedia.publicUrl,
-          storageProvider: MediaStorageProvider.CLOUDINARY,
-          storagePublicId: uploadedMedia.storagePublicId,
-          mimeType: avatar.mimeType,
-          originalName: avatar.originalName,
-          sizeBytes: avatar.size,
-        },
-        manager,
-      );
+    await this.userAvatarService.uploadUserAvatar(user.id, avatar);
 
-      await this.userAvatarRepository.create(userId, media.id, manager);
-    });
-
-    return this.findOne(userId);
+    return this.findOne(user.id);
   }
 
   async delete(userId: number): Promise<MessageResponse> {
-    const avatars = await this.userAvatarRepository.findAllByUserId(userId);
-    const mediaIds = avatars.map((avatar) => avatar.media.id);
-    const storagePublicIds = avatars.map((avatar) => avatar.media.storagePublicId);
+    const user = await this.userRepository.findOne(userId);
 
-    const deleteRes = await this.userRepository.delete(userId);
+    if (!user) throw new NotFoundException(`User not found`);
 
-    if (deleteRes.affected === 0) {
-      throw new NotFoundException(`User not found`);
-    }
+    await this.userAvatarService.deleteAllByUserId(user.id);
 
-    await this.mediaRepository.delete(mediaIds);
+    const deleteRes = await this.userRepository.delete(user.id);
 
-    await Promise.allSettled(
-      storagePublicIds.map(async (storagePublicId) =>
-        this.mediaStorageService.delete(storagePublicId),
-      ),
-    );
+    if (deleteRes.affected === 0) throw new NotFoundException(`User not found`);
 
     return { message: 'User deleted successfully' };
   }
 
   private async toUserResponse(user: UserEntity): Promise<UserResponse> {
-    const currentAvatar = await this.userAvatarRepository.findCurrentByUserId(user.id);
+    const avatarUrl = await this.userAvatarService.getCurrentAvatarUrl(user.id);
 
     return {
       id: user.id,
@@ -129,7 +86,7 @@ export class UserService {
       name: user.name,
       surname: user.surname,
       birthday: user.birthday,
-      avatarUrl: currentAvatar?.media.publicUrl ?? null,
+      avatarUrl,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
