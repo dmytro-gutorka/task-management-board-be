@@ -36,3 +36,20 @@ export interface UserModuleComposerArgs {
 }
 
 export type AvatarAllowerMimeTypes = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];
+
+export interface CreateUserAvatarInput {
+  userId: number;
+  mediaId: number;
+}
+
+export interface UploadUserAvatarInput {
+  buffer: Buffer;
+  originalName: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface UserAuthModel {
+  id: number;
+  email: string;
+}

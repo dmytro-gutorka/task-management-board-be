@@ -1,6 +1,12 @@
 import type { EntityManager } from 'typeorm';
 import type { MessageResponse, Nullable } from '@types';
-import type { CreateUserDto, UpdateUserDto, UploadUserAvatarDto, UserResponse } from '../types.js';
+import type {
+  CreateUserDto,
+  UpdateUserDto,
+  UploadUserAvatarDto,
+  UserAuthModel,
+  UserResponse,
+} from '../types.js';
 import type { UserEntity } from '../entities/user.entity.js';
 import type { UserRepository } from '../repositories/user.repository.js';
 import type { UserAvatarService } from '../../media/services/user-avatar.service.js';
@@ -23,12 +29,12 @@ export class UserService {
   async findOneByEmailOrNull(
     email: string,
     manager?: EntityManager,
-  ): Promise<Nullable<UserResponse>> {
+  ): Promise<Nullable<UserAuthModel>> {
     const user = await this.userRepository.findByField('email', email, manager);
 
     if (!user) return null;
 
-    return this.toUserResponse(user);
+    return this.toUserAuthModel(user);
   }
 
   // todo: add validation for query error
@@ -65,13 +71,10 @@ export class UserService {
 
   async delete(userId: number): Promise<MessageResponse> {
     const user = await this.userRepository.findOne(userId);
+
     if (!user) throw new NotFoundException(`User not found`);
 
-    try {
-      await this.userAvatarService.deleteAllByUserId(user.id);
-    } catch {
-      /* empty */
-    }
+    await this.userAvatarService.deleteAllByUserId(user.id);
 
     const deletedUser = await this.userRepository.delete(user.id);
 
@@ -93,6 +96,13 @@ export class UserService {
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    };
+  }
+
+  private toUserAuthModel(user: UserEntity): UserAuthModel {
+    return {
+      id: user.id,
+      email: user.email,
     };
   }
 }

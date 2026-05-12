@@ -1,47 +1,40 @@
-import type { DataSource, EntityManager, Repository } from 'typeorm';
-import { MediaEntity } from '../entities/media.entity.js';
+import type { DataSource, EntityManager } from 'typeorm';
+import type { CreateUserAvatarInput } from '../../user/types.js';
 import { UserAvatarEntity } from '../entities/user-avatar.entity.js';
 
-import { type Nullable, SortOrder } from '../../../shared/types/index.js';
-import { UserEntity } from '../../user/index.js';
+import { type Nullable } from '../../../shared/types/index.js';
 
 export class UserAvatarRepository {
-  private readonly userAvatarRepository: Repository<UserAvatarEntity>;
+  constructor(private readonly dataSource: DataSource) {}
 
-  constructor(private readonly dataSource: DataSource) {
-    this.userAvatarRepository = this.dataSource.getRepository(UserAvatarEntity);
-  }
-
-  async create(
-    userId: UserEntity['id'],
-    mediaId: MediaEntity['id'],
-    manager?: EntityManager,
-  ): Promise<UserAvatarEntity> {
+  async create(input: CreateUserAvatarInput, manager?: EntityManager): Promise<UserAvatarEntity> {
     const repository = this.getRepository(manager);
 
-    return repository.save({
-      user: { id: userId },
-      media: { id: mediaId },
+    const userAvatar = repository.create(input);
+
+    return repository.save(userAvatar);
+  }
+
+  async findByUserId(userId: number, manager?: EntityManager): Promise<Nullable<UserAvatarEntity>> {
+    return this.getRepository(manager).findOne({
+      where: { userId },
+      relations: {
+        media: true,
+      },
     });
   }
 
-  async findCurrentByUserId(userId: UserEntity['id']): Promise<Nullable<UserAvatarEntity>> {
-    return this.userAvatarRepository.findOne({
-      where: { user: { id: userId } },
-      relations: { media: true },
-      order: { createdAt: SortOrder.DESC, id: SortOrder.DESC },
-    });
-  }
-
-  async findAllByUserId(userId: UserEntity['id']): Promise<UserAvatarEntity[]> {
-    return this.userAvatarRepository.find({
-      where: { user: { id: userId } },
-      relations: { media: true },
-      order: { createdAt: SortOrder.DESC, id: SortOrder.DESC },
-    });
+  async updateMediaByUserId(
+    userId: number,
+    mediaId: number,
+    manager?: EntityManager,
+  ): Promise<void> {
+    await this.getRepository(manager).update({ userId }, { mediaId });
   }
 
   private getRepository(manager?: EntityManager) {
-    return manager ? manager.getRepository(UserAvatarEntity) : this.userAvatarRepository;
+    return manager
+      ? manager.getRepository(UserAvatarEntity)
+      : this.dataSource.getRepository(UserAvatarEntity);
   }
 }

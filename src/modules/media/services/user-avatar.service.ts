@@ -1,7 +1,7 @@
-import type { DataSource } from 'typeorm';
 import type { Nullable } from '@types';
 import { MediaStorageFolderPreset } from '../../../infrastructure/media-storage/types.js';
-import type { UploadUserAvatarDto } from '../../user/types.js';
+import type { UploadUserAvatarInput } from '../../user/types.js';
+import type { MediaEntity } from '../entities/media.entity.js';
 import type { UserAvatarRepository } from '../repositories/user-avatar.repository.js';
 import type { MediaService } from './media.service.js';
 
@@ -9,41 +9,62 @@ import { MediaType } from '../../../shared/enums/media.enums.js';
 
 export class UserAvatarService {
   constructor(
-    private readonly dataSource: DataSource,
-    private readonly mediaService: MediaService,
     private readonly userAvatarRepository: UserAvatarRepository,
+    private readonly mediaService: MediaService,
   ) {}
 
-  async uploadUserAvatar(userId: number, avatar: UploadUserAvatarDto): Promise<void> {
-    await this.dataSource.transaction(async (manager) => {
-      const media = await this.mediaService.upload({
-        buffer: avatar.buffer,
-        fileName: avatar.originalName,
-        mimeType: avatar.mimeType,
-        size: avatar.size,
-        mediaType: MediaType.IMAGE,
-        resourceType: MediaType.IMAGE,
-        folderPreset: {
-          preset: MediaStorageFolderPreset.USER_AVATAR,
-          userId,
-        },
-        manager,
-      });
+  async uploadUserAvatar(userId: number, avatar: UploadUserAvatarInput): Promise<MediaEntity> {
+    const currentAvatar = await this.userAvatarRepository.findByUserId(userId);
 
-      await this.userAvatarRepository.create(userId, media.id, manager);
+    const newMedia = await this.mediaService.upload({
+      buffer: avatar.buffer,
+      fileName: avatar.originalName,
+      mimeType: avatar.mimeType,
+      size: avatar.size,
+      mediaType: MediaType.IMAGE,
+      folderPreset: {
+        preset: MediaStorageFolderPreset.USER_AVATAR,
+        userId,
+      },
+      resourceType: MediaType.IMAGE,
     });
+
+    try {
+      if (currentAvatar) {
+        await this.userAvatarRepository.updateMediaByUserId(userId, newMedia.id);
+      } else {
+        await this.userAvatarRepository.create({
+          userId,
+          mediaId: newMedia.id,
+        });
+      }
+    } catch (error) {
+      await this.mediaService.deleteOne(newMedia);
+      throw error;
+    }
+
+    if (currentAvatar?.media) {
+      await this.mediaService.deleteOne(currentAvatar.media);
+    }
+
+    return newMedia;
   }
 
   async getCurrentAvatarUrl(userId: number): Promise<Nullable<string>> {
-    const currentAvatar = await this.userAvatarRepository.findCurrentByUserId(userId);
+    const userAvatar = await this.userAvatarRepository.findByUserId(userId);
 
-    return currentAvatar?.media.publicUrl ?? null;
+    return userAvatar?.media.publicUrl ?? null;
   }
 
   async deleteAllByUserId(userId: number): Promise<void> {
-    const avatars = await this.userAvatarRepository.findAllByUserId(userId);
-    const avatarMedia = avatars.map((avatar) => avatar.media);
+    const userAvatar = await this.userAvatarRepository.findByUserId(userId);
 
-    await this.mediaService.deleteMany(avatarMedia);
+    if (!userAvatar?.media) return;
+
+    try {
+      await this.mediaService.deleteOne(userAvatar.media);
+    } catch {
+      /* empty */
+    }
   }
 }

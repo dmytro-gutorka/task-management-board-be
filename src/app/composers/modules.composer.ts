@@ -31,7 +31,7 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const mediaRepository = new MediaRepository(dataSource);
   const userAvatarRepository = new UserAvatarRepository(dataSource);
   const mediaService = new MediaService(mediaRepository, mediaStorageService);
-  const userAvatarService = new UserAvatarService(dataSource, mediaService, userAvatarRepository);
+  const userAvatarService = new UserAvatarService(userAvatarRepository, mediaService);
 
   // Feature modules and services
   const user = runUserModuleComposer({ dataSource, userAvatarService });

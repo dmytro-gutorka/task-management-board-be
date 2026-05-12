@@ -20,30 +20,40 @@ export class MediaService {
       resourceType: input.resourceType,
     });
 
-    return this.create(
-      {
-        mediaType: input.mediaType,
-        publicUrl: uploadedMedia.publicUrl,
-        storageProvider: uploadedMedia.storageProvider,
-        storagePublicId: uploadedMedia.storagePublicId,
-        mimeType: input.mimeType,
-        originalName: input.fileName,
-        sizeBytes: input.size,
-      },
-      input.manager,
-    );
+    try {
+      return await this.create(
+        {
+          mediaType: input.mediaType,
+          publicUrl: uploadedMedia.publicUrl,
+          storageProvider: uploadedMedia.storageProvider,
+          storagePublicId: uploadedMedia.storagePublicId,
+          mimeType: input.mimeType,
+          originalName: input.fileName,
+          sizeBytes: input.size,
+        },
+        input.manager,
+      );
+    } catch (error) {
+      try {
+        await this.mediaStorageService.delete(uploadedMedia.storagePublicId);
+      } catch {
+        /* empty */
+      }
+
+      throw error;
+    }
   }
 
   async create(input: CreateUploadedMediaInput, manager?: EntityManager): Promise<MediaEntity> {
     return this.mediaRepository.create(input, manager);
   }
 
-  async deleteMany(media: MediaEntity[], manager?: EntityManager): Promise<void> {
-    if (media.length === 0) return;
-
-    for (const mediaItem of media) {
-      await this.mediaStorageService.delete(mediaItem.storagePublicId);
-      await this.mediaRepository.delete([mediaItem.id], manager);
+  async deleteOne(media: MediaEntity, manager?: EntityManager): Promise<void> {
+    try {
+      await this.mediaStorageService.delete(media.storagePublicId);
+      await this.mediaRepository.delete([media.id], manager);
+    } catch {
+      /* empty */
     }
   }
 }
