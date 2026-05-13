@@ -26,4 +26,11 @@ export const EnvFileSchema = z.object({
   CLOUDINARY_API_KEY: z.string('CLOUDINARY_API_KEY must be in env file'),
   CLOUDINARY_API_SECRET: z.string('CLOUDINARY_API_SECRET must be in env file'),
   CLOUDINARY_FOLDER: z.string('CLOUDINARY_FOLDER must be in env file'),
+
+  RESET_PASSWORD_TOKEN_BYTES: z.coerce.number(
+    'RESET_PASSWORD_TOKEN_BYTES must be a number in env file',
+  ),
+  RESET_PASSWORD_TOKEN_TTL_MS: z.coerce.number(
+    'RESET_PASSWORD_TOKEN_TTL_MS must be a number in env file',
+  ),
 });

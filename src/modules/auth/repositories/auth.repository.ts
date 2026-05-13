@@ -1,6 +1,6 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm';
 import type { Nullable } from '@types';
-import { type CreateAuthDto, type UpdateAuthDto } from '../types.js';
+import { type CreateAuthDto } from '../types.js';
 import type { AuthProvider } from '../enums/auth-provider.enum.js';
 import { AuthEntity } from '../entities/auth.entity.js';
 import { NotFoundException } from '@exceptions';
@@ -25,17 +25,22 @@ export class AuthRepository {
     return this.authRepository.findOneBy({ email, provider });
   }
 
-  async update(id: number, updateAuthDto: UpdateAuthDto): Promise<AuthEntity> {
-    const entity = await this.authRepository.preload({
-      id,
-      ...updateAuthDto,
+  async findByUserIdAndProvider(
+    userId: number,
+    provider: AuthProvider,
+    manager?: EntityManager,
+  ): Promise<Nullable<AuthEntity>> {
+    return this.getRepository(manager).findOneBy({ userId, provider });
+  }
+
+  async updatePassword(id: number, passwordHash: string, manager?: EntityManager): Promise<void> {
+    const result = await this.getRepository(manager).update(id, {
+      password: passwordHash,
     });
 
-    if (!entity) {
+    if (result.affected === 0) {
       throw new NotFoundException(`Auth with id ${id} not found`);
     }
-
-    return this.authRepository.save(entity);
   }
 
   private getRepository(manager?: EntityManager) {

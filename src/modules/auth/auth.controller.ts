@@ -1,15 +1,23 @@
 import type { Request, Response } from 'express';
 import type { MessageResponse, TypedRequest } from '@types';
-import type { ActiveUser, SignInLocalDto, SignUpLocalDto, TokenResponse } from './types.js';
+import type {
+  ActiveUser,
+  ConfirmPasswordResetDto,
+  SignInLocalDto,
+  SignUpLocalDto,
+  TokenResponse,
+} from './types.js';
 import type { AuthService } from './services/auth.service.js';
 import type { AuthLocalService } from './services/auth-local.service.js';
 import type { CookiesService } from './services/cookies.service.js';
+import type { PasswordResetService } from './services/password-reset.service.js';
 
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly cookiesService: CookiesService,
     private readonly authLocalService: AuthLocalService,
+    private readonly passwordResetService: PasswordResetService,
   ) {}
 
   signUp = async (req: TypedRequest<{ body: SignUpLocalDto }>, res: Response) => {
@@ -43,5 +51,23 @@ export class AuthController {
     this.cookiesService.setRefreshTokenCookie(res, refreshToken);
 
     res.status(200).json({ accessToken } satisfies TokenResponse);
+  };
+
+  requestPasswordReset = async (req: Request, res: Response) => {
+    const user: ActiveUser = req.user!;
+    const response = await this.passwordResetService.requestAuthenticatedPasswordReset(user);
+
+    res.status(200).json(response);
+  };
+
+  confirmPasswordReset = async (
+    req: TypedRequest<{ body: ConfirmPasswordResetDto }>,
+    res: Response,
+  ) => {
+    await this.passwordResetService.confirmPasswordReset(req.validated.body);
+
+    res
+      .status(200)
+      .json({ message: 'Password was successfully changed' } satisfies MessageResponse);
   };
 }

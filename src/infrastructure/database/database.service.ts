@@ -31,6 +31,7 @@ export class DatabaseService {
 
     // return config
     return {
+      schema: 'public',
       type: 'postgres',
       host,
       port,

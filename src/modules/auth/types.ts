@@ -5,6 +5,7 @@ import type { UserService } from '@modules/user';
 import type { Nullable } from '@types';
 import type { AuthProvider } from './enums/auth-provider.enum.js';
 import type { ActiveUserSchema } from './schemas/active-user.schema.js';
+import type { ConfirmPasswordResetSchema } from './schemas/confirm-password-reset.schema.js';
 import type { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import type { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
 
@@ -45,3 +46,21 @@ export interface AuthModuleComposerArgs {
 }
 
 export type ActiveUser = ZodInfer<typeof ActiveUserSchema>;
+
+// Reset password
+export interface PasswordResetRequestResponse {
+  message: string;
+  resetToken: string;
+  resetUrl: string;
+  // I will implement email sending in the next PR, so for now I've implemented this just for testing purposes
+  // When I connect email service, I will return only "message" field
+}
+
+export interface CreatePasswordResetTokenInput {
+  userId: number;
+  authId: number;
+  tokenHash: string;
+  expiresAt: Date;
+}
+
+export type ConfirmPasswordResetDto = ZodInfer<typeof ConfirmPasswordResetSchema>;
