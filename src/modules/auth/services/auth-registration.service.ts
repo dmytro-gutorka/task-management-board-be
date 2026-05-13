@@ -24,7 +24,7 @@ export class AuthRegistrationService {
       const manager = queryRunner.manager;
 
       // Create or get a user record
-      let user = await this.userService.findOneByEmailOrNull(email, manager);
+      let user = await this.userService.findOneUserAuthModelByEmailOrNull(email, manager);
 
       // hash the password
       let hashedPassword: Nullable<string> = null;

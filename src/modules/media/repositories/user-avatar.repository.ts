@@ -1,11 +1,15 @@
-import type { DataSource, EntityManager } from 'typeorm';
-import type { CreateUserAvatarInput } from '../../user/types.js';
+import type { DataSource, EntityManager, Repository } from 'typeorm';
+import type { CreateUserAvatarInput } from '../types.js';
 import { UserAvatarEntity } from '../entities/user-avatar.entity.js';
 
 import { type Nullable } from '../../../shared/types/index.js';
 
 export class UserAvatarRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  private readonly userAvatarRepository: Repository<UserAvatarEntity>;
+
+  constructor(private readonly dataSource: DataSource) {
+    this.userAvatarRepository = this.dataSource.getRepository(UserAvatarEntity);
+  }
 
   async create(input: CreateUserAvatarInput, manager?: EntityManager): Promise<UserAvatarEntity> {
     const repository = this.getRepository(manager);
@@ -33,8 +37,6 @@ export class UserAvatarRepository {
   }
 
   private getRepository(manager?: EntityManager) {
-    return manager
-      ? manager.getRepository(UserAvatarEntity)
-      : this.dataSource.getRepository(UserAvatarEntity);
+    return manager ? manager.getRepository(UserAvatarEntity) : this.userAvatarRepository;
   }
 }

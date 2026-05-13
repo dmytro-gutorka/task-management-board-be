@@ -1,4 +1,4 @@
-import type { AvatarAllowerMimeTypes } from '../../modules/user/types.js';
+import type { AvatarAllowerMimeTypes } from '@modules/media/types.js';
 
 import { AVATAR_ALLOWED_MIME_TYPES } from '../../modules/user/user.constants.js';
 

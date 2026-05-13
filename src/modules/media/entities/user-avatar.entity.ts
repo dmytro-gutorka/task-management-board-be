@@ -3,7 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -14,6 +14,7 @@ import { UserEntity } from '../../user/index.js';
 
 @Entity('user_avatars')
 @Unique('UQ_user_avatars_user_id', ['userId'])
+@Unique('UQ_user_avatars_media_id', ['mediaId'])
 export class UserAvatarEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -21,14 +22,14 @@ export class UserAvatarEntity {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => MediaEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
   @Column({ name: 'media_id' })
   mediaId: number;
 
-  @ManyToOne(() => MediaEntity, { onDelete: 'CASCADE' })
+  @OneToOne(() => MediaEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'media_id' })
   media: MediaEntity;
 

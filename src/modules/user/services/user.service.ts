@@ -26,7 +26,7 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async findOneByEmailOrNull(
+  async findOneUserAuthModelByEmailOrNull(
     email: string,
     manager?: EntityManager,
   ): Promise<Nullable<UserAuthModel>> {
@@ -74,7 +74,7 @@ export class UserService {
 
     if (!user) throw new NotFoundException(`User not found`);
 
-    await this.userAvatarService.deleteAllByUserId(user.id);
+    await this.userAvatarService.tryDeleteAllByUserId(user.id);
 
     const deletedUser = await this.userRepository.delete(user.id);
 

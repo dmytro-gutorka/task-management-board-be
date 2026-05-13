@@ -5,8 +5,6 @@ import type { CreateUserSchema } from './schemas/create-user.schema.js';
 import type { UpdateUserSchema } from './schemas/update-user.schema.js';
 import type { UserAvatarService } from '../media/services/user-avatar.service.js';
 
-import { AVATAR_ALLOWED_MIME_TYPES } from './user.constants.js';
-
 export type CreateUserDto = ZodInfer<typeof CreateUserSchema>;
 
 export type UpdateUserDto = ZodInfer<typeof UpdateUserSchema>;
@@ -33,20 +31,6 @@ export interface UploadUserAvatarDto {
 export interface UserModuleComposerArgs {
   dataSource: DataSource;
   userAvatarService: UserAvatarService;
-}
-
-export type AvatarAllowerMimeTypes = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];
-
-export interface CreateUserAvatarInput {
-  userId: number;
-  mediaId: number;
-}
-
-export interface UploadUserAvatarInput {
-  buffer: Buffer;
-  originalName: string;
-  mimeType: string;
-  size: number;
 }
 
 export interface UserAuthModel {

@@ -6,6 +6,7 @@ import type {
 import type { MediaEntity } from './entities/media.entity.js';
 
 import type { MediaType } from '../../shared/enums/media.enums.js';
+import { AVATAR_ALLOWED_MIME_TYPES } from '../user/user.constants.js';
 
 export interface UploadMediaFileInput {
   buffer: Buffer;
@@ -27,3 +28,17 @@ export interface CreateUploadedMediaInput {
   originalName: string;
   sizeBytes: number;
 }
+
+export interface CreateUserAvatarInput {
+  userId: number;
+  mediaId: number;
+}
+
+export interface UploadUserAvatarInput {
+  buffer: Buffer;
+  originalName: string;
+  mimeType: string;
+  size: number;
+}
+
+export type AvatarAllowerMimeTypes = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];

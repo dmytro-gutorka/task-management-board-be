@@ -1,6 +1,6 @@
 import type { Nullable } from '@types';
 import { MediaStorageFolderPreset } from '../../../infrastructure/media-storage/types.js';
-import type { UploadUserAvatarInput } from '../../user/types.js';
+import type { UploadUserAvatarInput } from '../types.js';
 import type { MediaEntity } from '../entities/media.entity.js';
 import type { UserAvatarRepository } from '../repositories/user-avatar.repository.js';
 import type { MediaService } from './media.service.js';
@@ -61,10 +61,15 @@ export class UserAvatarService {
 
     if (!userAvatar?.media) return;
 
+    await this.mediaService.tryDeleteOne(userAvatar.media);
+  }
+
+  async tryDeleteAllByUserId(userId: number): Promise<void> {
     try {
-      await this.mediaService.deleteOne(userAvatar.media);
+      await this.deleteAllByUserId(userId);
     } catch {
-      /* empty */
+      // Intentionally ignore avatar cleanup errors.
+      // User deletion should not be blocked by storage cleanup failure.
     }
   }
 }
