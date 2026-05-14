@@ -11,6 +11,7 @@ import { MediaService } from '../../modules/media/services/media.service.js';
 import { UserAvatarService } from '../../modules/media/services/user-avatar.service.js';
 
 import { CloudinaryMediaStorageService } from '../../infrastructure/media-storage/index.js';
+import { runNotificationModuleComposer } from '../../modules/notification/index.js';
 
 export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   // Infrastructure and shared modules and services
@@ -42,6 +43,9 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const task = runTaskModuleComposer({ dataSource });
   loggerService.init('TaskModule');
 
+  const notification = runNotificationModuleComposer({ dataSource, configService });
+  loggerService.init('NotificationModule');
+
   // Compose routers
   const moduleRouters: AppModuleRouters = {
     userRouter: user.userRouter,
@@ -49,5 +53,5 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
     taskRouter: task.taskRouter,
   };
 
-  return { moduleRouters, loggerService, accessTokenGuard: auth.accessTokenGuard };
+  return { moduleRouters, loggerService, accessTokenGuard: auth.accessTokenGuard, notification };
 };
