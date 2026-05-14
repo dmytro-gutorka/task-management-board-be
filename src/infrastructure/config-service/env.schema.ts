@@ -7,6 +7,7 @@ export const EnvFileSchema = z.object({
     ['dev', 'prod', 'test'],
     'APP_ENV must be in env file. Available values: dev, prod, test',
   ),
+  APP_FRONTEND_URL: z.string('APP_FRONTEND_URL must be in env file'),
 
   // DATABASE
   DB_HOST: z.string('DB_HOST must be in env file'),
@@ -33,4 +34,7 @@ export const EnvFileSchema = z.object({
   RESET_PASSWORD_TOKEN_TTL_MS: z.coerce.number(
     'RESET_PASSWORD_TOKEN_TTL_MS must be a number in env file',
   ),
+
+  RESEND_API_KEY: z.string('RESEND_API_KEY must be in env file'),
+  RESEND_EMAIL_FROM: z.string('RESEND_EMAIL_FROM must be in env file'),
 });
