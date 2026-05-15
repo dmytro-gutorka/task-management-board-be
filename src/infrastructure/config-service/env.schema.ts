@@ -28,6 +28,7 @@ export const EnvFileSchema = z.object({
   CLOUDINARY_API_SECRET: z.string('CLOUDINARY_API_SECRET must be in env file'),
   CLOUDINARY_FOLDER: z.string('CLOUDINARY_FOLDER must be in env file'),
 
+  // RESET_PASSWORD
   RESET_PASSWORD_TOKEN_BYTES: z.coerce.number(
     'RESET_PASSWORD_TOKEN_BYTES must be a number in env file',
   ),
@@ -35,6 +36,29 @@ export const EnvFileSchema = z.object({
     'RESET_PASSWORD_TOKEN_TTL_MS must be a number in env file',
   ),
 
+  // RESEND
   RESEND_API_KEY: z.string('RESEND_API_KEY must be in env file'),
   RESEND_EMAIL_FROM: z.string('RESEND_EMAIL_FROM must be in env file'),
+
+  // REDIS
+  REDIS_HOST: z.string('REDIS_HOST must be in env file'),
+  REDIS_PORT: z.coerce.number('REDIS_PORT must be a number in env file'),
+
+  // EMAIL QUEUE
+  EMAIL_QUEUE_MAX_ATTEMPTS: z.coerce.number(
+    'EMAIL_QUEUE_MAX_ATTEMPTS must be a number in env file',
+  ),
+  EMAIL_QUEUE_BACKOFF_DELAY_MS: z.coerce.number(
+    'EMAIL_QUEUE_BACKOFF_DELAY_MS must be a number in env file',
+  ),
+  EMAIL_QUEUE_DISPATCH_BATCH_SIZE: z.coerce.number(
+    'EMAIL_QUEUE_DISPATCH_BATCH_SIZE must be a number in env file',
+  ),
+  EMAIL_OUTBOX_CLEANUP_RETENTION_DAYS: z.coerce.number(
+    ': EMAIL_OUTBOX_CLEANUP_RETENTION_DAYS must be a number in env file',
+  ),
+
+  // EMAIL CRON
+  EMAIL_QUEUE_DISPATCH_CRON: z.string('EMAIL_QUEUE_DISPATCH_CRON must be in env file'),
+  EMAIL_OUTBOX_CLEANUP_CRON: z.string('EMAIL_OUTBOX_CLEANUP_CRON must be in env file'),
 });

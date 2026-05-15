@@ -10,3 +10,11 @@ export enum EmailOutboxStatus {
 export enum EmailProvider {
   RESEND = 'resend',
 }
+
+export enum EmailQueueName {
+  EMAIL = 'email',
+}
+
+export enum EmailJobName {
+  SEND_EMAIL = 'send-email',
+}

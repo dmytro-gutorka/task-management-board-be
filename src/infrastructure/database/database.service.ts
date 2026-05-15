@@ -19,6 +19,7 @@ export class DatabaseService {
 
   private getDataSourceConfig(): DataSourceOptions {
     // env variables
+
     const host = this.configService.env.DB_HOST;
     const port = this.configService.env.DB_PORT;
     const username = this.configService.env.DB_USERNAME;
