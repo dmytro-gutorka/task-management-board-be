@@ -13,6 +13,26 @@ export class EmailOutboxRepository {
     this.emailOutboxRepository = this.dataSource.getRepository(EmailOutboxEntity);
   }
 
+  async findOneById(id: number, manager?: EntityManager): Promise<Nullable<EmailOutboxEntity>> {
+    return this.getRepository(manager).findOneBy({ id });
+  }
+
+  async findPendingForDispatch(
+    limit: number,
+    manager: EntityManager,
+  ): Promise<EmailOutboxEntity[]> {
+    const queryBuilder = this.getRepository(manager).createQueryBuilder('email_outbox');
+    const alias = queryBuilder.alias;
+
+    return queryBuilder
+      .setLock('pessimistic_write')
+      .setOnLocked('skip_locked')
+      .where(`${alias}.status = :status`, { status: EmailOutboxStatus.PENDING })
+      .orderBy(`${alias}.createdAt`, 'ASC')
+      .limit(limit)
+      .getMany();
+  }
+
   async create(input: CreateEmailOutboxInput): Promise<EmailOutboxEntity> {
     const repository = this.getRepository(input.manager);
 
@@ -26,24 +46,6 @@ export class EmailOutboxRepository {
     });
 
     return repository.save(emailOutbox);
-  }
-
-  async findOneById(id: number, manager?: EntityManager): Promise<Nullable<EmailOutboxEntity>> {
-    return this.getRepository(manager).findOneBy({ id });
-  }
-
-  async findPendingForDispatch(
-    limit: number,
-    manager: EntityManager,
-  ): Promise<EmailOutboxEntity[]> {
-    return this.getRepository(manager)
-      .createQueryBuilder('emailOutbox')
-      .setLock('pessimistic_write')
-      .setOnLocked('skip_locked')
-      .where('emailOutbox.status = :status', { status: EmailOutboxStatus.PENDING })
-      .orderBy('emailOutbox.createdAt', 'ASC')
-      .limit(limit)
-      .getMany();
   }
 
   async update(id: number, input: UpdateEmailOutboxInput, manager?: EntityManager): Promise<void> {

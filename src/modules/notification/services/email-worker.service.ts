@@ -1,4 +1,4 @@
-import type { SendEmailJobData } from '../notification.types.js';
+import type { EmailWorkerServiceDependencies, SendEmailJobData } from '../notification.types.js';
 import type { EmailOutboxCleanupService } from './email-outbox-cleanup.service.js';
 import type { EmailOutboxDispatcherService } from './email-outbox-dispatcher.service.js';
 import type { EmailOutboxProcessorService } from './email-outbox-processor.service.js';
@@ -12,19 +12,11 @@ import { Worker } from 'bullmq';
 import type { ScheduledTask } from 'node-cron';
 import { schedule } from 'node-cron';
 
-interface EmailWorkerServiceDependencies {
-  configService: ConfigService;
-  bullMqConnection: QueueConnectionOptions;
-  emailOutboxDispatcherService: EmailOutboxDispatcherService;
-  emailOutboxProcessorService: EmailOutboxProcessorService;
-  emailOutboxCleanupService: EmailOutboxCleanupService;
-  loggerService: LoggerService;
-}
-
 export class EmailWorkerService {
   private worker: Worker<SendEmailJobData> | null = null;
   private dispatchTask: ScheduledTask | null = null;
   private cleanupTask: ScheduledTask | null = null;
+
   private readonly configService: ConfigService;
   private readonly connection: QueueConnectionOptions;
   private readonly emailOutboxDispatcherService: EmailOutboxDispatcherService;

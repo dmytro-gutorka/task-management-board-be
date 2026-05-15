@@ -11,6 +11,7 @@ const bootstrap = async () => {
     await emailWorkerService.close();
     await emailQueue.close();
     await dataSource.destroy();
+
     process.exit(0);
   };
 

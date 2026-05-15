@@ -1,10 +1,11 @@
 import type { DataSource, EntityManager } from 'typeorm';
-import type { EmailOutboxRepository } from './repositories/email-outbox.repository.js';
-import type { EmailOutboxService } from './services/email-outbox.service.js';
+import type { EmailOutboxCleanupService } from './services/email-outbox-cleanup.service.js';
+import type { EmailOutboxDispatcherService } from './services/email-outbox-dispatcher.service.js';
+import type { EmailOutboxProcessorService } from './services/email-outbox-processor.service.js';
 
 import { ConfigService } from '../../infrastructure/config-service/index.js';
-import type { EmailProviderService } from '../../infrastructure/email-provider/index.js';
 import { LoggerService } from '../../infrastructure/logger/index.js';
+import type { QueueConnectionOptions } from '../../infrastructure/queue/index.js';
 import { type EmailOutboxStatus, EmailProvider } from './notofication.enums.js';
 
 export interface CreateEmailOutboxInput {
@@ -35,11 +36,11 @@ export interface SendEmailJobData {
   emailOutboxId: number;
 }
 
-export interface EmailWorkerComposerArgs {
+export interface EmailWorkerServiceDependencies {
   configService: ConfigService;
-  dataSource: DataSource;
-  emailOutboxRepository: EmailOutboxRepository;
-  emailOutboxService: EmailOutboxService;
-  emailProviderService: EmailProviderService;
+  bullMqConnection: QueueConnectionOptions;
+  emailOutboxDispatcherService: EmailOutboxDispatcherService;
+  emailOutboxProcessorService: EmailOutboxProcessorService;
+  emailOutboxCleanupService: EmailOutboxCleanupService;
   loggerService: LoggerService;
 }
