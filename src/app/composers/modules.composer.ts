@@ -51,6 +51,9 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const task = runTaskModuleComposer({ dataSource });
   loggerService.init('TaskModule');
 
+  const notification = runNotificationModuleComposer({ dataSource, configService });
+  loggerService.init('NotificationModule');
+
   // Compose routers
   const moduleRouters: AppModuleRouters = {
     userRouter: user.userRouter,
