@@ -17,6 +17,7 @@ export const runAuthModuleComposer = ({
   dataSource,
   userService,
   configService,
+  emailOutboxService,
 }: AuthModuleComposerArgs) => {
   const jwtService = new JwtService(configService);
   const cryptoService = new CryptoService(configService);
@@ -44,6 +45,7 @@ export const runAuthModuleComposer = ({
     dataSource,
     authService,
     passwordResetTokenRepository,
+    emailOutboxService,
     cryptoService,
     configService,
   );

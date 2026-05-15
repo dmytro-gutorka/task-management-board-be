@@ -9,6 +9,8 @@ import type { ConfirmPasswordResetSchema } from './schemas/confirm-password-rese
 import type { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import type { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
 
+import { EmailOutboxService } from '../notification/index.js';
+
 export interface CreateAuthDto {
   email: string;
   password: Nullable<string>;
@@ -43,6 +45,7 @@ export interface AuthModuleComposerArgs {
   dataSource: DataSource;
   configService: ConfigService;
   userService: UserService;
+  emailOutboxService: EmailOutboxService;
 }
 
 export type ActiveUser = ZodInfer<typeof ActiveUserSchema>;
@@ -50,10 +53,6 @@ export type ActiveUser = ZodInfer<typeof ActiveUserSchema>;
 // Reset password
 export interface PasswordResetRequestResponse {
   message: string;
-  resetToken: string;
-  resetUrl: string;
-  // I will implement email sending in the next PR, so for now I've implemented this just for testing purposes
-  // When I connect email service, I will return only "message" field
 }
 
 export interface CreatePasswordResetTokenInput {

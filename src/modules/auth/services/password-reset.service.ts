@@ -10,6 +10,12 @@ import type { CryptoService } from './crypto.service.js';
 
 import type { ConfigService } from '../../../infrastructure/config-service/index.js';
 import { BadRequestException } from '../../../shared/exceptions.js';
+import { EmailOutboxService } from '../../notification/index.js';
+import {
+  buildPasswordResetEmailHtml,
+  buildPasswordResetEmailText,
+  buildPasswordResetUrl,
+} from '../helpers/password-reset-email.helpers.js';
 import {
   generatePasswordResetToken,
   hashPasswordResetToken,
@@ -21,6 +27,7 @@ export class PasswordResetService {
     private readonly dataSource: DataSource,
     private readonly authService: AuthService,
     private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
+    private readonly emailOutboxService: EmailOutboxService,
     private readonly cryptoService: CryptoService,
     private readonly configService: ConfigService,
   ) {}
@@ -29,27 +36,37 @@ export class PasswordResetService {
     activeUser: ActiveUser,
   ): Promise<PasswordResetRequestResponse> {
     const auth = await this.authService.findLocalAuthByUserId(activeUser.id);
-
-    await this.passwordResetTokenRepository.revokeActiveByUserId(activeUser.id);
-
     const resetToken = generatePasswordResetToken(
       this.configService.env.RESET_PASSWORD_TOKEN_BYTES,
     );
     const tokenHash = hashPasswordResetToken(resetToken);
     const expiresAt = new Date(Date.now() + this.configService.env.RESET_PASSWORD_TOKEN_TTL_MS);
+    const resetUrl = buildPasswordResetUrl(this.configService.env.APP_FRONTEND_URL, resetToken);
 
-    await this.passwordResetTokenRepository.create({
-      userId: activeUser.id,
-      authId: auth.id,
-      tokenHash,
-      expiresAt,
+    await this.dataSource.transaction(async (manager) => {
+      await this.passwordResetTokenRepository.revokeActiveByUserId(activeUser.id, manager);
+
+      await this.passwordResetTokenRepository.create(
+        {
+          userId: activeUser.id,
+          authId: auth.id,
+          tokenHash,
+          expiresAt,
+        },
+        manager,
+      );
+
+      await this.emailOutboxService.enqueue({
+        recipientEmail: activeUser.email,
+        subject: 'Reset your password',
+        htmlBody: buildPasswordResetEmailHtml(resetUrl),
+        textBody: buildPasswordResetEmailText(resetUrl),
+        manager,
+      });
     });
 
     return {
-      message: 'Password reset link generated',
-      resetToken,
-      resetUrl: `/reset-password?token=${resetToken}`,
-      // I left it hardcoded here just for MVP, but in the future we can make it configurable
+      message: 'Password reset link sent',
     };
   }
 

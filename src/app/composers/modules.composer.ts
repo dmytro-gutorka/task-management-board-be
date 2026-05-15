@@ -37,14 +37,19 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   // Feature modules and services
   const user = runUserModuleComposer({ dataSource, userAvatarService });
 
-  const auth = runAuthModuleComposer({ dataSource, configService, userService: user.userService });
+  const notification = runNotificationModuleComposer({ dataSource, configService });
+  loggerService.init('NotificationModule');
+
+  const auth = runAuthModuleComposer({
+    dataSource,
+    configService,
+    userService: user.userService,
+    emailOutboxService: notification.emailOutboxService,
+  });
   loggerService.init('AuthModule');
 
   const task = runTaskModuleComposer({ dataSource });
   loggerService.init('TaskModule');
-
-  const notification = runNotificationModuleComposer({ dataSource, configService });
-  loggerService.init('NotificationModule');
 
   // Compose routers
   const moduleRouters: AppModuleRouters = {
@@ -53,5 +58,10 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
     taskRouter: task.taskRouter,
   };
 
-  return { moduleRouters, loggerService, accessTokenGuard: auth.accessTokenGuard, notification };
+  return {
+    moduleRouters,
+    loggerService,
+    accessTokenGuard: auth.accessTokenGuard,
+    notification,
+  };
 };
