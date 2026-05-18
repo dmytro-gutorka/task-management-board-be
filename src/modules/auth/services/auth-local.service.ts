@@ -1,4 +1,10 @@
-import { type SignUpLocalDto, type TokensPair } from '../types.js';
+import {
+  type ActiveUser,
+  type SetLocalPasswordDto,
+  type SignInLocalDto,
+  type SignUpLocalDto,
+  type TokensPair,
+} from '../types.js';
 import { AuthProvider } from '../enums/auth-provider.enum.js';
 import type { AuthRepository } from '../repositories/auth.repository.js';
 import type { AuthRegistrationService } from './auth-registration.service.js';
@@ -35,7 +41,7 @@ export class AuthLocalService {
       );
     }
 
-    const auth = await this.authRegistrationService.registerUser({
+    const auth = await this.authRegistrationService.registerUserWithAuth({
       provider: AuthProvider.LOCAL,
       email: signUpDto.email,
       password: signUpDto.password,
@@ -48,15 +54,15 @@ export class AuthLocalService {
     });
   }
 
-  async signIn(signUpDto: SignUpLocalDto): Promise<TokensPair> {
+  async signIn(signInDto: SignInLocalDto): Promise<TokensPair> {
     const existingAuth = await this.authRepository.findByEmailAndProvider(
-      signUpDto.email,
+      signInDto.email,
       AuthProvider.LOCAL,
     );
 
     if (!existingAuth) {
       const existingGoogleAuth = await this.authRepository.findByEmailAndProvider(
-        signUpDto.email,
+        signInDto.email,
         AuthProvider.GOOGLE,
       );
 
@@ -70,7 +76,7 @@ export class AuthLocalService {
     }
 
     const passwordVerified = await this.cryptoService.compare(
-      signUpDto.password,
+      signInDto.password,
       existingAuth.password!,
     );
 
@@ -82,6 +88,36 @@ export class AuthLocalService {
       id: existingAuth.userId,
       email: existingAuth.email,
       provider: existingAuth.provider,
+    });
+  }
+
+  async setPassword(
+    activeUser: ActiveUser,
+    setLocalPasswordDto: SetLocalPasswordDto,
+  ): Promise<void> {
+    const existingLocalAuth = await this.authRepository.findByUserIdAndProvider(
+      activeUser.id,
+      AuthProvider.LOCAL,
+    );
+
+    if (existingLocalAuth) {
+      throw new ConflictException('Local auth account already exists');
+    }
+
+    const existingGoogleAuth = await this.authRepository.findByUserIdAndProvider(
+      activeUser.id,
+      AuthProvider.GOOGLE,
+    );
+
+    if (!existingGoogleAuth) {
+      throw new BadRequestException('Only Google users can set a local password this way');
+    }
+
+    await this.authRegistrationService.registerUserWithAuth({
+      provider: AuthProvider.LOCAL,
+      email: activeUser.email,
+      password: setLocalPasswordDto.password,
+      userId: activeUser.id,
     });
   }
 }

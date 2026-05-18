@@ -3,6 +3,7 @@ import type { MessageResponse, TypedRequest } from '@types';
 import type {
   ActiveUser,
   ConfirmPasswordResetDto,
+  SetLocalPasswordDto,
   SignInGoogleDto,
   SignInLocalDto,
   SignUpLocalDto,
@@ -62,6 +63,24 @@ export class AuthController {
     this.cookiesService.setRefreshTokenCookie(res, refreshToken);
 
     res.status(200).json({ accessToken } satisfies TokenResponse);
+  };
+
+  linkGoogle = async (req: TypedRequest<{ body: SignInGoogleDto }>, res: Response) => {
+    const user: ActiveUser = req.user!;
+
+    await this.authGoogleService.link(user, req.validated.body);
+
+    res
+      .status(200)
+      .json({ message: 'Google account linked successfully' } satisfies MessageResponse);
+  };
+
+  setPassword = async (req: TypedRequest<{ body: SetLocalPasswordDto }>, res: Response) => {
+    const user: ActiveUser = req.user!;
+
+    await this.authLocalService.setPassword(user, req.validated.body);
+
+    res.status(200).json({ message: 'Password set successfully' } satisfies MessageResponse);
   };
 
   signOut = (_req: Request, res: Response) => {

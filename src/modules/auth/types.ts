@@ -6,6 +6,7 @@ import type { Nullable } from '@types';
 import type { AuthProvider } from './enums/auth-provider.enum.js';
 import type { ActiveUserSchema } from './schemas/active-user.schema.js';
 import type { ConfirmPasswordResetSchema } from './schemas/confirm-password-reset.schema.js';
+import type { SetLocalPasswordSchema } from './schemas/set-local-password.schema.js';
 import type { SignInGoogleSchema } from './schemas/sign-in-google.schema.js';
 import type { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import type { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
@@ -20,8 +21,6 @@ export interface CreateAuthDto {
   provider: AuthProvider;
   providerAccountId?: Nullable<string>;
 }
-
-export interface UpdateAuthDto extends Partial<CreateAuthDto> {}
 
 export interface AuthRegisterPayload {
   provider: AuthProvider;
@@ -41,6 +40,8 @@ export interface TokensPair {
 export type SignInLocalDto = ZodInfer<typeof SignInLocalSchema>;
 export type SignUpLocalDto = ZodInfer<typeof SignUpLocalSchema>;
 export type SignInGoogleDto = ZodInfer<typeof SignInGoogleSchema>;
+export type ConfirmPasswordResetDto = ZodInfer<typeof ConfirmPasswordResetSchema>;
+export type SetLocalPasswordDto = ZodInfer<typeof SetLocalPasswordSchema>;
 
 // ! Responses
 export type TokenResponse = {
@@ -69,5 +70,3 @@ export interface CreatePasswordResetTokenInput {
   tokenHash: string;
   expiresAt: Date;
 }
-
-export type ConfirmPasswordResetDto = ZodInfer<typeof ConfirmPasswordResetSchema>;
