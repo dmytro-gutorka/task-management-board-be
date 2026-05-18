@@ -4,7 +4,6 @@ import { AuthProvider } from '../enums/auth-provider.enum.js';
 import type { AuthRepository } from '../repositories/auth.repository.js';
 import type { AuthRegistrationService } from './auth-registration.service.js';
 import type { JwtService } from './jwt.service.js';
-import { ConflictException } from '@exceptions';
 
 export class AuthGoogleService {
   constructor(
@@ -42,12 +41,6 @@ export class AuthGoogleService {
       });
 
       return this.signTokens(googleAuth.userId, googleAuth.email);
-    }
-
-    const existingAuthWithSameEmail = await this.authRepository.findByEmail(googleUser.email);
-
-    if (existingAuthWithSameEmail) {
-      throw new ConflictException('Account with this email already exists');
     }
 
     const googleAuth = await this.authRegistrationService.registerUser({
