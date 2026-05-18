@@ -15,11 +15,8 @@ export class AuthRepository {
   async create(createAuthDto: CreateAuthDto, manager?: EntityManager): Promise<AuthEntity> {
     const repository = this.getRepository(manager);
     const auth = repository.create(createAuthDto);
-    return repository.save(auth);
-  }
 
-  async findByEmail(email: string, manager?: EntityManager): Promise<Nullable<AuthEntity>> {
-    return this.getRepository(manager).findOneBy({ email });
+    return repository.save(auth);
   }
 
   async findByEmailAndProvider(

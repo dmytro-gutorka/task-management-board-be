@@ -14,12 +14,12 @@ export class AuthRegistrationService {
     private readonly authRepository: AuthRepository,
   ) {}
 
-  async registerUser({
-    provider,
-    email,
-    password,
-    userId,
+  async registerUserWithAuth({
     providerAccountId = null,
+    password,
+    provider,
+    userId,
+    email,
     name,
   }: AuthRegisterPayload): Promise<AuthEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -28,7 +28,9 @@ export class AuthRegistrationService {
 
     try {
       const manager = queryRunner.manager;
+
       let authUserId = userId;
+      let hashedPassword: Nullable<string> = null;
 
       if (!authUserId) {
         const existingUser = await this.userService.findOneUserAuthModelByEmailOrNull(
@@ -40,10 +42,7 @@ export class AuthRegistrationService {
         authUserId = user.id;
       }
 
-      let hashedPassword: Nullable<string> = null;
-      if (password) {
-        hashedPassword = await this.cryptoService.hash(password);
-      }
+      if (password) hashedPassword = await this.cryptoService.hash(password);
 
       const auth = await this.authRepository.create(
         {
@@ -55,8 +54,8 @@ export class AuthRegistrationService {
         },
         manager,
       );
-      await queryRunner.commitTransaction();
 
+      await queryRunner.commitTransaction();
       return auth;
     } catch (error) {
       await queryRunner.rollbackTransaction();
