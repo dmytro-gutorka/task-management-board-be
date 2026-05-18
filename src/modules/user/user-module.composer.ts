@@ -4,9 +4,12 @@ import { UserService } from './services/user.service.js';
 import { UserController } from './user.controller.js';
 import { createUserRouter } from './user.router.js';
 
-export const runUserModuleComposer = ({ dataSource }: UserModuleComposerArgs) => {
+export const runUserModuleComposer = ({
+  dataSource,
+  userAvatarService,
+}: UserModuleComposerArgs) => {
   const userRepository = new UserRepository(dataSource);
-  const userService = new UserService(userRepository);
+  const userService = new UserService(userRepository, userAvatarService);
   const userController = new UserController(userService);
 
   const userRouter = createUserRouter(userController);

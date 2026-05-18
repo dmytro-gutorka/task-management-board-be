@@ -15,14 +15,24 @@ export class AuthLocalService {
   ) {}
 
   async signUp(signUpDto: SignUpLocalDto): Promise<TokensPair> {
-    // Check if the auth record already exists
-    const existingAuth = await this.authRepository.findByEmailAndProvider(
+    const existingLocalAuth = await this.authRepository.findByEmailAndProvider(
       signUpDto.email,
       AuthProvider.LOCAL,
     );
 
-    if (existingAuth) {
+    if (existingLocalAuth) {
       throw new ConflictException('User with this email already exists');
+    }
+
+    const existingGoogleAuth = await this.authRepository.findByEmailAndProvider(
+      signUpDto.email,
+      AuthProvider.GOOGLE,
+    );
+
+    if (existingGoogleAuth) {
+      throw new ConflictException(
+        'Account already exists with Google login. Sign in with Google and set a password in Profile/Security.',
+      );
     }
 
     const auth = await this.authRegistrationService.registerUser({
@@ -45,6 +55,17 @@ export class AuthLocalService {
     );
 
     if (!existingAuth) {
+      const existingGoogleAuth = await this.authRepository.findByEmailAndProvider(
+        signUpDto.email,
+        AuthProvider.GOOGLE,
+      );
+
+      if (existingGoogleAuth) {
+        throw new BadRequestException(
+          'This account uses Google login. Sign in with Google or set a password in Profile/Security.',
+        );
+      }
+
       throw new NotFoundException('User not found');
     }
 

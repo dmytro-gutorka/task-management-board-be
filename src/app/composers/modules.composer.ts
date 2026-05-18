@@ -5,6 +5,14 @@ import { runAuthModuleComposer } from '@modules/auth';
 import { runTaskModuleComposer } from '@modules/task';
 import { runUserModuleComposer } from '@modules/user';
 import type { AppModuleRouters, ModulesComposerReturn } from './types.js';
+import { MediaRepository } from '../../modules/media/repositories/media.repository.js';
+import { UserAvatarRepository } from '../../modules/media/repositories/user-avatar.repository.js';
+import { MediaService } from '../../modules/media/services/media.service.js';
+import { UserAvatarService } from '../../modules/media/services/user-avatar.service.js';
+
+import { GoogleAuthProviderServiceImpl } from '../../infrastructure/google-auth/index.js';
+import { CloudinaryMediaStorageService } from '../../infrastructure/media-storage/index.js';
+import { runNotificationModuleComposer } from '../../modules/notification/index.js';
 
 export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   // Infrastructure and shared modules and services
@@ -18,11 +26,31 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const dataSource = await databaseService.initialize();
   loggerService.init(DatabaseService.name);
 
-  // Feature modules and services
-  const user = runUserModuleComposer({ dataSource });
-  loggerService.init('UserModule');
+  const mediaStorageService = new CloudinaryMediaStorageService(configService);
+  loggerService.init(CloudinaryMediaStorageService.name);
 
-  const auth = runAuthModuleComposer({ dataSource, configService, userService: user.userService });
+  const googleAuthProviderService = new GoogleAuthProviderServiceImpl(configService);
+  loggerService.init(GoogleAuthProviderServiceImpl.name);
+
+  // Shared feature services
+  const mediaRepository = new MediaRepository(dataSource);
+  const userAvatarRepository = new UserAvatarRepository(dataSource);
+  const mediaService = new MediaService(mediaRepository, mediaStorageService);
+  const userAvatarService = new UserAvatarService(userAvatarRepository, mediaService);
+
+  // Feature modules and services
+  const user = runUserModuleComposer({ dataSource, userAvatarService });
+
+  const notification = runNotificationModuleComposer({ dataSource, configService });
+  loggerService.init('NotificationModule');
+
+  const auth = runAuthModuleComposer({
+    dataSource,
+    configService,
+    userService: user.userService,
+    emailOutboxService: notification.emailOutboxService,
+    googleAuthProviderService,
+  });
   loggerService.init('AuthModule');
 
   const task = runTaskModuleComposer({ dataSource });
@@ -35,5 +63,10 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
     taskRouter: task.taskRouter,
   };
 
-  return { moduleRouters, loggerService, accessTokenGuard: auth.accessTokenGuard };
+  return {
+    moduleRouters,
+    loggerService,
+    accessTokenGuard: auth.accessTokenGuard,
+    notification,
+  };
 };

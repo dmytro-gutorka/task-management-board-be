@@ -14,35 +14,44 @@ export class AuthRegistrationService {
     private readonly authRepository: AuthRepository,
   ) {}
 
-  async registerUser({ provider, email, password }: AuthRegisterPayload): Promise<AuthEntity> {
-    /* TRANSACTION */
+  async registerUser({
+    provider,
+    email,
+    password,
+    userId,
+    providerAccountId = null,
+    name,
+  }: AuthRegisterPayload): Promise<AuthEntity> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
       const manager = queryRunner.manager;
+      let authUserId = userId;
 
-      // Create or get a user record
-      let user = await this.userService.findOneByEmailOrNull(email, manager);
+      if (!authUserId) {
+        const existingUser = await this.userService.findOneUserAuthModelByEmailOrNull(
+          email,
+          manager,
+        );
+        const user = existingUser ?? (await this.userService.create({ email, name }, manager));
 
-      // hash the password
+        authUserId = user.id;
+      }
+
       let hashedPassword: Nullable<string> = null;
       if (password) {
         hashedPassword = await this.cryptoService.hash(password);
       }
 
-      if (!user) {
-        user = await this.userService.create({ email }, manager);
-      }
-
-      // create an auth record
       const auth = await this.authRepository.create(
         {
-          userId: user.id,
-          email: user.email,
+          userId: authUserId,
+          email,
           password: hashedPassword,
           provider,
+          providerAccountId,
         },
         manager,
       );

@@ -3,6 +3,7 @@ import type { infer as ZodInfer } from 'zod';
 import type { Nullable } from '@types';
 import type { CreateUserSchema } from './schemas/create-user.schema.js';
 import type { UpdateUserSchema } from './schemas/update-user.schema.js';
+import type { UserAvatarService } from '../media/services/user-avatar.service.js';
 
 export type CreateUserDto = ZodInfer<typeof CreateUserSchema>;
 
@@ -20,6 +21,19 @@ export interface UserResponse {
   updatedAt: Date;
 }
 
+export interface UploadUserAvatarDto {
+  buffer: Buffer;
+  originalName: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface UserModuleComposerArgs {
   dataSource: DataSource;
+  userAvatarService: UserAvatarService;
+}
+
+export interface UserAuthModel {
+  id: number;
+  email: string;
 }

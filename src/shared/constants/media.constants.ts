@@ -1,0 +1,3 @@
+export const MULTER_ERROR_TYPES = {
+  LIMIT_FILE_SIZE: 'LIMIT_FILE_SIZE',
+};

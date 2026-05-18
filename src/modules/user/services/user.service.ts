@@ -1,26 +1,40 @@
 import type { EntityManager } from 'typeorm';
 import type { MessageResponse, Nullable } from '@types';
-import type { CreateUserDto, UpdateUserDto, UserResponse } from '../types.js';
+import type {
+  CreateUserDto,
+  UpdateUserDto,
+  UploadUserAvatarDto,
+  UserAuthModel,
+  UserResponse,
+} from '../types.js';
+import type { UserEntity } from '../entities/user.entity.js';
 import type { UserRepository } from '../repositories/user.repository.js';
+import type { UserAvatarService } from '../../media/services/user-avatar.service.js';
 import { ConflictException, NotFoundException } from '@exceptions';
 
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly userAvatarService: UserAvatarService,
+  ) {}
 
   async findOne(id: number): Promise<UserResponse> {
     const user = await this.userRepository.findOne(id);
-    if (!user) {
-      throw new NotFoundException(`User not found`);
-    }
 
-    return user;
+    if (!user) throw new NotFoundException(`User not found`);
+
+    return this.toUserResponse(user);
   }
 
-  async findOneByEmailOrNull(
+  async findOneUserAuthModelByEmailOrNull(
     email: string,
     manager?: EntityManager,
-  ): Promise<Nullable<UserResponse>> {
-    return this.userRepository.findByField('email', email, manager);
+  ): Promise<Nullable<UserAuthModel>> {
+    const user = await this.userRepository.findByField('email', email, manager);
+
+    if (!user) return null;
+
+    return this.toUserAuthModel(user);
   }
 
   // todo: add validation for query error
@@ -30,29 +44,65 @@ export class UserService {
       createUserDto.email,
       manager,
     );
-    if (existingUser) {
-      throw new ConflictException(`User already exists`);
-    }
+    if (existingUser) throw new ConflictException(`User already exists`);
 
-    return this.userRepository.create(createUserDto, manager);
+    const user = await this.userRepository.create(createUserDto, manager);
+
+    return this.toUserResponse(user);
   }
 
   async update(userId: number, updateUserDto: UpdateUserDto): Promise<UserResponse> {
     const updatedUser = await this.userRepository.update(userId, updateUserDto);
-    if (!updatedUser) {
-      throw new NotFoundException(`User not found`);
-    }
 
-    return updatedUser;
+    if (!updatedUser) throw new NotFoundException(`User not found`);
+
+    return this.toUserResponse(updatedUser);
+  }
+
+  async uploadAvatar(userId: number, avatar: UploadUserAvatarDto): Promise<UserResponse> {
+    const user = await this.userRepository.findOne(userId);
+
+    if (!user) throw new NotFoundException(`User not found`);
+
+    await this.userAvatarService.uploadUserAvatar(user.id, avatar);
+
+    return this.findOne(user.id);
   }
 
   async delete(userId: number): Promise<MessageResponse> {
-    const deleteRes = await this.userRepository.delete(userId);
+    const user = await this.userRepository.findOne(userId);
 
-    if (deleteRes.affected === 0) {
-      throw new NotFoundException(`User not found`);
-    }
+    if (!user) throw new NotFoundException(`User not found`);
+
+    await this.userAvatarService.tryDeleteAllByUserId(user.id);
+
+    const deletedUser = await this.userRepository.delete(user.id);
+
+    if (deletedUser.affected === 0) throw new NotFoundException(`User not found`);
 
     return { message: 'User deleted successfully' };
+  }
+
+  private async toUserResponse(user: UserEntity): Promise<UserResponse> {
+    const avatarUrl = await this.userAvatarService.getCurrentAvatarUrl(user.id);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      birthday: user.birthday,
+      avatarUrl,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  private toUserAuthModel(user: UserEntity): UserAuthModel {
+    return {
+      id: user.id,
+      email: user.email,
+    };
   }
 }
