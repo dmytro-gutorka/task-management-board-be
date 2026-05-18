@@ -27,6 +27,9 @@ export class AuthEntity {
   @Column({ type: 'enum', enum: AuthProvider })
   provider: AuthProvider;
 
+  @Column({ name: 'provider_account_id', type: 'varchar', length: 255, nullable: true })
+  providerAccountId: Nullable<string>;
+
   @Column({ name: 'user_id' })
   userId: number;
 

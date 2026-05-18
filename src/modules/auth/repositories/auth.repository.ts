@@ -1,6 +1,6 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm';
 import type { Nullable } from '@types';
-import { type CreateAuthDto } from '../types.js';
+import type { CreateAuthDto } from '../types.js';
 import type { AuthProvider } from '../enums/auth-provider.enum.js';
 import { AuthEntity } from '../entities/auth.entity.js';
 import { NotFoundException } from '@exceptions';
@@ -18,11 +18,24 @@ export class AuthRepository {
     return repository.save(auth);
   }
 
+  async findByEmail(email: string, manager?: EntityManager): Promise<Nullable<AuthEntity>> {
+    return this.getRepository(manager).findOneBy({ email });
+  }
+
   async findByEmailAndProvider(
     email: string,
     provider: AuthProvider,
+    manager?: EntityManager,
   ): Promise<Nullable<AuthEntity>> {
-    return this.authRepository.findOneBy({ email, provider });
+    return this.getRepository(manager).findOneBy({ email, provider });
+  }
+
+  async findByProviderAndProviderAccountId(
+    provider: AuthProvider,
+    providerAccountId: string,
+    manager?: EntityManager,
+  ): Promise<Nullable<AuthEntity>> {
+    return this.getRepository(manager).findOneBy({ provider, providerAccountId });
   }
 
   async findByUserIdAndProvider(

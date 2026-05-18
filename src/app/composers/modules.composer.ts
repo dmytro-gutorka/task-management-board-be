@@ -10,6 +10,7 @@ import { UserAvatarRepository } from '../../modules/media/repositories/user-avat
 import { MediaService } from '../../modules/media/services/media.service.js';
 import { UserAvatarService } from '../../modules/media/services/user-avatar.service.js';
 
+import { GoogleAuthProviderServiceImpl } from '../../infrastructure/google-auth/index.js';
 import { CloudinaryMediaStorageService } from '../../infrastructure/media-storage/index.js';
 import { runNotificationModuleComposer } from '../../modules/notification/index.js';
 
@@ -28,6 +29,9 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
   const mediaStorageService = new CloudinaryMediaStorageService(configService);
   loggerService.init(CloudinaryMediaStorageService.name);
 
+  const googleAuthProviderService = new GoogleAuthProviderServiceImpl(configService);
+  loggerService.init(GoogleAuthProviderServiceImpl.name);
+
   // Shared feature services
   const mediaRepository = new MediaRepository(dataSource);
   const userAvatarRepository = new UserAvatarRepository(dataSource);
@@ -45,6 +49,7 @@ export const runModulesComposer = async (): Promise<ModulesComposerReturn> => {
     configService,
     userService: user.userService,
     emailOutboxService: notification.emailOutboxService,
+    googleAuthProviderService,
   });
   loggerService.init('AuthModule');
 

@@ -4,6 +4,7 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard.js';
 import { AuthRepository } from './repositories/auth.repository.js';
 import { PasswordResetTokenRepository } from './repositories/password-reset-token.repository.js';
 import { AuthService } from './services/auth.service.js';
+import { AuthGoogleService } from './services/auth-google.service.js';
 import { AuthLocalService } from './services/auth-local.service.js';
 import { AuthRegistrationService } from './services/auth-registration.service.js';
 import { CookiesService } from './services/cookies.service.js';
@@ -18,6 +19,7 @@ export const runAuthModuleComposer = ({
   userService,
   configService,
   emailOutboxService,
+  googleAuthProviderService,
 }: AuthModuleComposerArgs) => {
   const jwtService = new JwtService(configService);
   const cryptoService = new CryptoService(configService);
@@ -40,6 +42,12 @@ export const runAuthModuleComposer = ({
     authRepository,
     authRegistrationService,
   );
+  const authGoogleService = new AuthGoogleService(
+    jwtService,
+    authRepository,
+    authRegistrationService,
+    googleAuthProviderService,
+  );
 
   const passwordResetService = new PasswordResetService(
     dataSource,
@@ -53,12 +61,13 @@ export const runAuthModuleComposer = ({
   const refreshTokenGuard = new RefreshTokenGuard(jwtService);
   const accessTokenGuard = new AccessTokenGuard(jwtService);
 
-  const authController = new AuthController(
+  const authController = new AuthController({
     authService,
     cookiesService,
     authLocalService,
+    authGoogleService,
     passwordResetService,
-  );
+  });
 
   const authRouter = createAuthRouter(authController, refreshTokenGuard, accessTokenGuard);
 

@@ -3,22 +3,39 @@ import type { MessageResponse, TypedRequest } from '@types';
 import type {
   ActiveUser,
   ConfirmPasswordResetDto,
+  SignInGoogleDto,
   SignInLocalDto,
   SignUpLocalDto,
   TokenResponse,
 } from './types.js';
 import type { AuthService } from './services/auth.service.js';
+import type { AuthGoogleService } from './services/auth-google.service.js';
 import type { AuthLocalService } from './services/auth-local.service.js';
 import type { CookiesService } from './services/cookies.service.js';
 import type { PasswordResetService } from './services/password-reset.service.js';
 
+interface AuthControllerDependencies {
+  authService: AuthService;
+  cookiesService: CookiesService;
+  authLocalService: AuthLocalService;
+  authGoogleService: AuthGoogleService;
+  passwordResetService: PasswordResetService;
+}
+
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly cookiesService: CookiesService,
-    private readonly authLocalService: AuthLocalService,
-    private readonly passwordResetService: PasswordResetService,
-  ) {}
+  private readonly authService: AuthService;
+  private readonly cookiesService: CookiesService;
+  private readonly authLocalService: AuthLocalService;
+  private readonly authGoogleService: AuthGoogleService;
+  private readonly passwordResetService: PasswordResetService;
+
+  constructor(dependencies: AuthControllerDependencies) {
+    this.authService = dependencies.authService;
+    this.cookiesService = dependencies.cookiesService;
+    this.authLocalService = dependencies.authLocalService;
+    this.authGoogleService = dependencies.authGoogleService;
+    this.passwordResetService = dependencies.passwordResetService;
+  }
 
   signUp = async (req: TypedRequest<{ body: SignUpLocalDto }>, res: Response) => {
     const tokens = await this.authLocalService.signUp(req.validated.body);
@@ -31,6 +48,15 @@ export class AuthController {
 
   signIn = async (req: TypedRequest<{ body: SignInLocalDto }>, res: Response) => {
     const tokens = await this.authLocalService.signIn(req.validated.body);
+    const { accessToken, refreshToken } = tokens;
+
+    this.cookiesService.setRefreshTokenCookie(res, refreshToken);
+
+    res.status(200).json({ accessToken } satisfies TokenResponse);
+  };
+
+  signInGoogle = async (req: TypedRequest<{ body: SignInGoogleDto }>, res: Response) => {
+    const tokens = await this.authGoogleService.signIn(req.validated.body);
     const { accessToken, refreshToken } = tokens;
 
     this.cookiesService.setRefreshTokenCookie(res, refreshToken);

@@ -61,4 +61,7 @@ export const EnvFileSchema = z.object({
   // EMAIL CRON
   EMAIL_QUEUE_DISPATCH_CRON: z.string('EMAIL_QUEUE_DISPATCH_CRON must be in env file'),
   EMAIL_OUTBOX_CLEANUP_CRON: z.string('EMAIL_OUTBOX_CLEANUP_CRON must be in env file'),
+
+  // GOOGLE
+  GOOGLE_CLIENT_ID: z.string('GOOGLE_CLIENT_ID must be in env file'),
 });

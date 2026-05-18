@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ConfirmPasswordResetSchema } from './schemas/confirm-password-reset.schema.js';
 import { RequestPasswordResetSchema } from './schemas/request-password-reset.schema.js';
+import { SignInGoogleSchema } from './schemas/sign-in-google.schema.js';
 import { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
 import type { AccessTokenGuard } from './guards/access-token.guard.js';
@@ -18,6 +19,12 @@ export const createAuthRouter = (
   authRouter.post('/sign-in', [validateBodyMiddleware(SignInLocalSchema)], authController.signIn);
 
   authRouter.post('/sign-up', [validateBodyMiddleware(SignUpLocalSchema)], authController.signUp);
+
+  authRouter.post(
+    '/google',
+    [validateBodyMiddleware(SignInGoogleSchema)],
+    authController.signInGoogle,
+  );
 
   authRouter.get('/sign-out', [refreshTokenGuard.canActivate], authController.signOut);
 
