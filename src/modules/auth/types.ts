@@ -10,6 +10,7 @@ import type { SetLocalPasswordSchema } from './schemas/set-local-password.schema
 import type { SignInGoogleSchema } from './schemas/sign-in-google.schema.js';
 import type { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import type { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
+import type { UpdatePrimaryEmailSchema } from './schemas/update-primary-email.schema.js';
 
 import type { GoogleAuthProviderService } from '../../infrastructure/google-auth/index.js';
 import { EmailOutboxService } from '../notification/index.js';
@@ -42,6 +43,7 @@ export type SignUpLocalDto = ZodInfer<typeof SignUpLocalSchema>;
 export type SignInGoogleDto = ZodInfer<typeof SignInGoogleSchema>;
 export type ConfirmPasswordResetDto = ZodInfer<typeof ConfirmPasswordResetSchema>;
 export type SetLocalPasswordDto = ZodInfer<typeof SetLocalPasswordSchema>;
+export type UpdatePrimaryEmailDto = ZodInfer<typeof UpdatePrimaryEmailSchema>;
 
 // ! Responses
 export type TokenResponse = {
@@ -69,4 +71,20 @@ export interface CreatePasswordResetTokenInput {
   authId: number;
   tokenHash: string;
   expiresAt: Date;
+}
+
+export interface PrimaryEmailOption {
+  email: string;
+  providers: AuthProvider[];
+  isPrimary: boolean;
+}
+
+export interface PrimaryEmailOptionsResponse {
+  primaryEmail: string;
+  emails: PrimaryEmailOption[];
+}
+
+export interface UpdatePrimaryEmailResponse {
+  message: string;
+  primaryEmail: string;
 }

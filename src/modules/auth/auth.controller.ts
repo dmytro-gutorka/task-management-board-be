@@ -8,10 +8,12 @@ import type {
   SignInLocalDto,
   SignUpLocalDto,
   TokenResponse,
+  UpdatePrimaryEmailDto,
 } from './types.js';
 import type { AuthService } from './services/auth.service.js';
 import type { AuthGoogleService } from './services/auth-google.service.js';
 import type { AuthLocalService } from './services/auth-local.service.js';
+import type { AuthPrimaryEmailService } from './services/auth-primary-email.service.js';
 import type { CookiesService } from './services/cookies.service.js';
 import type { PasswordResetService } from './services/password-reset.service.js';
 
@@ -20,6 +22,7 @@ interface AuthControllerDependencies {
   cookiesService: CookiesService;
   authLocalService: AuthLocalService;
   authGoogleService: AuthGoogleService;
+  authPrimaryEmailService: AuthPrimaryEmailService;
   passwordResetService: PasswordResetService;
 }
 
@@ -28,6 +31,7 @@ export class AuthController {
   private readonly cookiesService: CookiesService;
   private readonly authLocalService: AuthLocalService;
   private readonly authGoogleService: AuthGoogleService;
+  private readonly authPrimaryEmailService: AuthPrimaryEmailService;
   private readonly passwordResetService: PasswordResetService;
 
   constructor(dependencies: AuthControllerDependencies) {
@@ -35,6 +39,7 @@ export class AuthController {
     this.cookiesService = dependencies.cookiesService;
     this.authLocalService = dependencies.authLocalService;
     this.authGoogleService = dependencies.authGoogleService;
+    this.authPrimaryEmailService = dependencies.authPrimaryEmailService;
     this.passwordResetService = dependencies.passwordResetService;
   }
 
@@ -114,5 +119,22 @@ export class AuthController {
     res
       .status(200)
       .json({ message: 'Password was successfully changed' } satisfies MessageResponse);
+  };
+
+  getPrimaryEmailOptions = async (req: Request, res: Response) => {
+    const user: ActiveUser = req.user!;
+    const response = await this.authPrimaryEmailService.getOptions(user);
+
+    res.status(200).json(response);
+  };
+
+  updatePrimaryEmail = async (
+    req: TypedRequest<{ body: UpdatePrimaryEmailDto }>,
+    res: Response,
+  ) => {
+    const user: ActiveUser = req.user!;
+    const response = await this.authPrimaryEmailService.update(user, req.validated.body);
+
+    res.status(200).json(response);
   };
 }

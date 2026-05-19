@@ -1,12 +1,6 @@
 import type { EntityManager } from 'typeorm';
-import type { MessageResponse, Nullable } from '@types';
-import type {
-  CreateUserDto,
-  UpdateUserDto,
-  UploadUserAvatarDto,
-  UserAuthModel,
-  UserResponse,
-} from '../types.js';
+import type { MessageResponse, Nullable, OmitDbMetaFiles } from '@types';
+import type { CreateUserDto, UploadUserAvatarDto, UserAuthModel, UserResponse } from '../types.js';
 import type { UserEntity } from '../entities/user.entity.js';
 import type { UserRepository } from '../repositories/user.repository.js';
 import type { UserAvatarService } from '../../media/services/user-avatar.service.js';
@@ -26,6 +20,14 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
+  async findOneUserAuthModel(id: number, manager?: EntityManager): Promise<UserAuthModel> {
+    const user = await this.userRepository.findOne(id, manager);
+
+    if (!user) throw new NotFoundException(`User not found`);
+
+    return this.toUserAuthModel(user);
+  }
+
   async findOneUserAuthModelByEmailOrNull(
     email: string,
     manager?: EntityManager,
@@ -37,7 +39,6 @@ export class UserService {
     return this.toUserAuthModel(user);
   }
 
-  // todo: add validation for query error
   async create(createUserDto: CreateUserDto, manager?: EntityManager): Promise<UserResponse> {
     const existingUser = await this.userRepository.findByField(
       'email',
@@ -51,8 +52,22 @@ export class UserService {
     return this.toUserResponse(user);
   }
 
-  async update(userId: number, updateUserDto: UpdateUserDto): Promise<UserResponse> {
-    const updatedUser = await this.userRepository.update(userId, updateUserDto);
+  async update(userId: number, user: Partial<OmitDbMetaFiles<UserEntity>>): Promise<UserResponse> {
+    const updatedUser = await this.userRepository.update(userId, user);
+
+    if (!updatedUser) throw new NotFoundException(`User not found`);
+
+    return this.toUserResponse(updatedUser);
+  }
+
+  async updatePrimaryEmail(userId: number, email: string): Promise<UserResponse> {
+    const existingUserWithEmail = await this.userRepository.findByField('email', email);
+
+    if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+      throw new ConflictException('Email is already used as primary email by another user');
+    }
+
+    const updatedUser = await this.userRepository.update(userId, { email });
 
     if (!updatedUser) throw new NotFoundException(`User not found`);
 
