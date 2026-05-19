@@ -6,6 +6,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
 import { AuthService } from './services/auth.service.js';
 import { AuthGoogleService } from './services/auth-google.service.js';
 import { AuthLocalService } from './services/auth-local.service.js';
+import { AuthPrimaryEmailService } from './services/auth-primary-email.service.js';
 import { AuthRegistrationService } from './services/auth-registration.service.js';
 import { CookiesService } from './services/cookies.service.js';
 import { CryptoService } from './services/crypto.service.js';
@@ -49,6 +50,8 @@ export const runAuthModuleComposer = ({
     googleAuthProviderService,
   );
 
+  const authPrimaryEmailService = new AuthPrimaryEmailService(authRepository, userService);
+
   const passwordResetService = new PasswordResetService(
     dataSource,
     authService,
@@ -67,6 +70,7 @@ export const runAuthModuleComposer = ({
     authLocalService,
     authGoogleService,
     passwordResetService,
+    authPrimaryEmailService,
   });
 
   const authRouter = createAuthRouter(authController, refreshTokenGuard, accessTokenGuard);

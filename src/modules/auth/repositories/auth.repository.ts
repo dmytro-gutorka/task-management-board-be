@@ -1,5 +1,5 @@
 import type { DataSource, EntityManager, Repository } from 'typeorm';
-import type { Nullable } from '@types';
+import { type Nullable, SortOrder } from '@types';
 import type { CreateAuthDto } from '../types.js';
 import type { AuthProvider } from '../enums/auth-provider.enum.js';
 import { AuthEntity } from '../entities/auth.entity.js';
@@ -17,6 +17,13 @@ export class AuthRepository {
     const auth = repository.create(createAuthDto);
 
     return repository.save(auth);
+  }
+
+  async findManyByUserId(userId: number, manager?: EntityManager): Promise<AuthEntity[]> {
+    return this.getRepository(manager).find({
+      where: { userId },
+      order: { id: SortOrder.ASC },
+    });
   }
 
   async findByEmailAndProvider(

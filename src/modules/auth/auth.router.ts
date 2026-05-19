@@ -5,6 +5,7 @@ import { SetLocalPasswordSchema } from './schemas/set-local-password.schema.js';
 import { SignInGoogleSchema } from './schemas/sign-in-google.schema.js';
 import { SignInLocalSchema } from './schemas/sign-in-local.schema.js';
 import { SignUpLocalSchema } from './schemas/sign-up-local.schema.js';
+import { UpdatePrimaryEmailSchema } from './schemas/update-primary-email.schema.js';
 import type { AccessTokenGuard } from './guards/access-token.guard.js';
 import { RefreshTokenGuard } from './guards/refresh-token.guard.js';
 import { AuthController } from './auth.controller.js';
@@ -50,6 +51,18 @@ export const createAuthRouter = (
     '/password-reset/confirm',
     [validateBodyMiddleware(ConfirmPasswordResetSchema)],
     authController.confirmPasswordReset,
+  );
+
+  authRouter.get(
+    '/primary-email-options',
+    [accessTokenGuard.canActivate],
+    authController.getPrimaryEmailOptions,
+  );
+
+  authRouter.patch(
+    '/primary-email',
+    [accessTokenGuard.canActivate, validateBodyMiddleware(UpdatePrimaryEmailSchema)],
+    authController.updatePrimaryEmail,
   );
 
   return authRouter;
